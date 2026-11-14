@@ -1,0 +1,14 @@
+{
+  "kbl": {
+    "updatedAt": "2026-11-14T19:30:00+09:00",
+    "source": "kbl.or.kr 일정 및 결과",
+    "seasons": "2025-26, 2026-27 시즌",
+    "auto": true
+  },
+  "uleague": {
+    "updatedAt": "2026-11-14T19:30:00+09:00",
+    "source": "kusf.or.kr U-리그 경기일정 및 결과",
+    "seasons": "2025, 2026 시즌",
+    "auto": false
+  }
+}

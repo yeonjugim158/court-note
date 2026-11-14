@@ -1,0 +1,65 @@
+# 코트노트 배포 + KBL 일정 자동 업데이트 (GitHub Pages)
+# - main에 push하면: 빌드 → 배포
+# - 경기 시간대(한국시간 13:00~00:59) 30분마다: kbl.or.kr 일정 확인 → 바뀐 게 있으면 커밋 + 빌드 + 배포
+#   (봇이 올린 커밋은 다른 워크플로를 깨우지 못해서, 업데이트와 배포를 한 곳에 둡니다)
+name: Deploy
+
+on:
+  push:
+    branches: [main]
+  schedule:
+    - cron: '*/30 4-15 * * *' # UTC 04:00~15:59 = KST 13:00~00:59
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+concurrency:
+  group: deploy
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    environment:
+      name: github-pages
+      url: ${{ steps.pages.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+
+      - name: Update KBL schedule
+        id: update
+        if: github.event_name != 'push'
+        env:
+          BROWSER_CHANNEL: chrome
+        run: |
+          node scripts/update-kbl.mjs
+          if git diff --quiet -- src/data/schedule; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          else
+            git config user.name "court-note-bot"
+            git config user.email "court-note-bot@users.noreply.github.com"
+            git add src/data/schedule
+            git commit -m "chore: KBL 일정 업데이트"
+            git push
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Build
+        if: github.event_name != 'schedule' || steps.update.outputs.changed == 'true'
+        run: npm run build
+      - uses: actions/upload-pages-artifact@v3
+        if: github.event_name != 'schedule' || steps.update.outputs.changed == 'true'
+        with:
+          path: dist
+      - id: pages
+        uses: actions/deploy-pages@v4
+        if: github.event_name != 'schedule' || steps.update.outputs.changed == 'true'

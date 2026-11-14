@@ -1,0 +1,24 @@
+{
+  "name": "court-note",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite --host",
+    "build": "vite build",
+    "preview": "vite preview --host",
+    "icons": "node scripts/make-icons.mjs",
+    "update:kbl": "node scripts/update-kbl.mjs"
+  },
+  "dependencies": {
+    "dexie": "4.0.8",
+    "dexie-react-hooks": "1.1.7",
+    "react": "18.3.1",
+    "react-dom": "18.3.1"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "4.3.1",
+    "playwright-core": "1.48.2",
+    "vite": "5.4.10"
+  }
+}
