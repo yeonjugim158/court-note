@@ -4,7 +4,7 @@ import { db, setSetting } from '../lib/db.js';
 import { useFavTeams, usePrefs, useSetting } from '../lib/hooks.js';
 import { exportBackup, importBackup, daysSince, BACKUP_REMIND_DAYS } from '../lib/backup.js';
 import { LEAGUES, teamsOf, getTeam } from '../data/teams.js';
-import { SCHEDULE_META, fmtUpdated } from '../data/games.js';
+import { SCHEDULE_META, fmtUpdated, checkedAt } from '../data/games.js';
 
 const APP_VERSION = '0.2';
 
@@ -151,15 +151,15 @@ export default function SettingsView() {
                 <span className="muted small" style={{ display: 'block', fontWeight: 400 }}>{m.seasons} · {m.source}</span>
               </span>
               <span className="small muted" style={{ textAlign: 'right', fontWeight: 400, flexShrink: 0 }}>
-                {fmtUpdated(m.updatedAt)}
+                {fmtUpdated(checkedAt(l.id))} 확인
                 <br />
-                {m.auto ? '자동 업데이트' : '수동 업데이트'}
+                {m.auto ? '30분마다 자동 확인' : '수동 업데이트'}
               </span>
             </div>
           );
         })}
         <ul className="plain muted">
-          <li>KBL은 공식 홈페이지 일정을 주기적으로 확인해 결과·일정 변경을 반영해요.</li>
+          <li>KBL은 경기 시간대(13시~새벽 1시)에 공식 홈페이지를 30분마다 확인해 결과·일정 변경을 반영해요. 확인이 몇 분~몇십 분 늦어질 때도 있어요.</li>
           <li>대학농구는 시즌 중 수동으로 업데이트해요.</li>
           <li>D리그·EASL·올스타전은 포함하지 않아요 → "직접 입력"으로 기록하세요.</li>
         </ul>

@@ -5,7 +5,7 @@ import { processImage } from '../lib/image.js';
 import { useFavTeams } from '../lib/hooks.js';
 import { MODES, MOODS, SEAT_ZONES, WATCH_VIA } from '../lib/entry.js';
 import { LEAGUES, STAGES, teamsOf, getLeague } from '../data/teams.js';
-import { getGames, isFinished, snapshotGame, SCHEDULE_UPDATED } from '../data/games.js';
+import { getGames, isFinished, snapshotGame, checkedAt, fmtUpdated } from '../data/games.js';
 import { getTeam } from '../data/teams.js';
 import { LayerHead, LeagueBadge, TeamName } from './ui.jsx';
 
@@ -216,7 +216,7 @@ export default function EntryForm({ date: initDate, entryId, onClose }) {
             })}
           </div>
           <button className="btn ghost block" onClick={customGame}>목록에 없어요 · 직접 입력</button>
-          <p className="muted small center" style={{ marginTop: 10 }}>공식 홈페이지 일정 기준 ({SCHEDULE_UPDATED} 업데이트)</p>
+          <p className="muted small center" style={{ marginTop: 10 }}>공식 홈페이지 일정 기준 · {fmtUpdated(checkedAt(f.leagueId))} 확인</p>
         </div>
       </>
     );

@@ -19,10 +19,15 @@ export function fmtUpdated(iso) {
   return `${d.getMonth() + 1}월 ${d.getDate()}일 ${p(d.getHours())}:${p(d.getMinutes())}`;
 }
 
-/** 가장 최근 업데이트 시각 */
-export const SCHEDULE_UPDATED = fmtUpdated(
-  [meta.kbl.updatedAt, meta.uleague.updatedAt].sort().slice(-1)[0]
-);
+/** KBL 마지막 확인 시각 — 배포 시 자동 업데이트가 넣어 줌 (로컬 개발에선 없음) */
+const KBL_CHECKED_AT = import.meta.env.VITE_CHECKED_AT || null;
+
+/** 리그별 마지막 확인 시각(ISO). 자동 확인 기록이 없으면 마지막 변경 시각 */
+export function checkedAt(leagueId) {
+  const m = meta[leagueId];
+  if (leagueId === 'kbl' && KBL_CHECKED_AT && KBL_CHECKED_AT > m.updatedAt) return KBL_CHECKED_AT;
+  return m.updatedAt;
+}
 
 const toGame = (leagueId) => ([date, time, stage, homeId, awayId, venue, homeScore, awayScore]) => ({
   id: `${leagueId}-${date}-${homeId}-${awayId}`,

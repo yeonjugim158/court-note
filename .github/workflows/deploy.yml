@@ -1,6 +1,6 @@
 # 코트노트 배포 + KBL 일정 자동 업데이트 (GitHub Pages)
 # - main에 push하면: 빌드 → 배포
-# - 경기 시간대(한국시간 13:00~00:59) 30분마다: kbl.or.kr 일정 확인 → 바뀐 게 있으면 커밋 + 빌드 + 배포
+# - 경기 시간대(한국시간 13:00~00:59) 30분마다: kbl.or.kr 일정 확인 → 확인 시각을 넣어 배포 (바뀐 경기가 있으면 커밋도)
 #   (봇이 올린 커밋은 다른 워크플로를 깨우지 못해서, 업데이트와 배포를 한 곳에 둡니다)
 name: Deploy
 
@@ -35,31 +35,41 @@ jobs:
           cache: npm
       - run: npm ci
 
+      # 매번 일정을 확인하고, 확인한 시각을 앱에 넣어 배포합니다 (앱에 "마지막 확인 시각"으로 표시)
+      # 바뀐 경기가 있을 때만 일정 파일을 커밋합니다.
+      # push 때 kbl.or.kr이 응답하지 않아도 앱 배포는 되도록 continue-on-error, 실패 표시는 맨 끝에서.
       - name: Update KBL schedule
         id: update
-        if: github.event_name != 'push'
+        continue-on-error: true
         env:
           BROWSER_CHANNEL: chrome
         run: |
           node scripts/update-kbl.mjs
-          if git diff --quiet -- src/data/schedule; then
-            echo "changed=false" >> "$GITHUB_OUTPUT"
-          else
+          echo "checked=$(TZ=Asia/Seoul date +%Y-%m-%dT%H:%M:%S+09:00)" >> "$GITHUB_OUTPUT"
+          if ! git diff --quiet -- src/data/schedule; then
             git config user.name "court-note-bot"
             git config user.email "court-note-bot@users.noreply.github.com"
             git add src/data/schedule
             git commit -m "chore: KBL 일정 업데이트"
             git push
-            echo "changed=true" >> "$GITHUB_OUTPUT"
           fi
 
+      # 예약 실행에서 확인에 실패하면 이전 배포(이전 확인 시각)를 그대로 둡니다.
       - name: Build
-        if: github.event_name != 'schedule' || steps.update.outputs.changed == 'true'
+        if: github.event_name == 'push' || steps.update.outcome == 'success'
+        env:
+          VITE_CHECKED_AT: ${{ steps.update.outputs.checked }}
         run: npm run build
       - uses: actions/upload-pages-artifact@v3
-        if: github.event_name != 'schedule' || steps.update.outputs.changed == 'true'
+        if: github.event_name == 'push' || steps.update.outcome == 'success'
         with:
           path: dist
       - id: pages
         uses: actions/deploy-pages@v4
-        if: github.event_name != 'schedule' || steps.update.outputs.changed == 'true'
+        if: github.event_name == 'push' || steps.update.outcome == 'success'
+
+      - name: Report update failure
+        if: steps.update.outcome == 'failure'
+        run: |
+          echo "::error::KBL 일정 확인에 실패했어요. 'Update KBL schedule' 단계 로그를 확인하세요."
+          exit 1

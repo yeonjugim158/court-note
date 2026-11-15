@@ -28,7 +28,7 @@ npm run dev
 `.github/workflows/deploy.yml` 하나가 배포와 일정 업데이트를 모두 맡습니다.
 
 - `main`에 push → 빌드 → GitHub Pages 배포
-- 경기 시간대(KST 13:00~00:59) 30분마다 → KBL 일정 확인 → 바뀌면 커밋 + 재배포
+- 경기 시간대(KST 13:00~00:59) 30분마다 → KBL 일정 확인 → 확인 시각을 넣어 재배포 (바뀐 경기가 있으면 커밋도). 앱에는 "마지막 확인 시각"이 표시됨
 - 저장소 Settings → Pages → Source를 **GitHub Actions**로 설정해야 합니다.
 - GitHub은 저장소에 60일간 커밋이 없으면 예약 실행을 멈춥니다. 비시즌(6~9월) 후 Actions 탭에서 다시 켜 주세요.
 
