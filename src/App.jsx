@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useFavTeams, usePrefs } from './lib/hooks.js';
 import { getTeam } from './data/teams.js';
+import { fillFinishedScores } from './lib/sync.js';
 import CalendarView from './components/CalendarView.jsx';
 import FeedView from './components/FeedView.jsx';
 import StatsView from './components/StatsView.jsx';
@@ -24,6 +25,11 @@ export default function App() {
 
   const prefs = usePrefs();
   const fav = useFavTeams();
+
+  // 경기 중에 남긴 기록에 끝난 경기의 최종 스코어 채우기
+  useEffect(() => {
+    fillFinishedScores().catch(() => {});
+  }, []);
 
   // 테마 · 응원팀 강조색 적용
   useEffect(() => {
