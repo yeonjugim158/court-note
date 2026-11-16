@@ -53,3 +53,8 @@ export function useCoverThumb(entry) {
     return p ? p.thumb : null;
   }, [entry?.id, entry?.coverPhotoId, entry?.updatedAt]);
 }
+
+/** 즐겨찾기한 경기 id 목록 */
+export function useFavGames() {
+  return useSetting('favGames', []);
+}

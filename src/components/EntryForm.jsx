@@ -5,7 +5,7 @@ import { processImage } from '../lib/image.js';
 import { useFavTeams } from '../lib/hooks.js';
 import { MODES, MOODS, SEAT_ZONES, WATCH_VIA } from '../lib/entry.js';
 import { LEAGUES, STAGES, teamsOf, getLeague } from '../data/teams.js';
-import { getGames, isFinished, snapshotGame, checkedAt, fmtUpdated } from '../data/games.js';
+import { getGame, getGames, isFinished, snapshotGame, checkedAt, fmtUpdated } from '../data/games.js';
 import { getTeam } from '../data/teams.js';
 import { LayerHead, LeagueBadge, TeamName } from './ui.jsx';
 
@@ -13,13 +13,15 @@ const MAX_PHOTOS = 10;
 
 const blankSide = () => ({ id: null, name: '', short: '', color: null });
 
-export default function EntryForm({ date: initDate, entryId, onClose }) {
+export default function EntryForm({ date: initDate, entryId, gameId, onClose }) {
   const editing = !!entryId;
+  // 달력 일정에서 경기를 눌러 들어온 경우: 직관/집관만 고르면 바로 기록 화면
+  const preset = !editing && gameId ? getGame(gameId) : null;
   const fav = useFavTeams();
   const [step, setStep] = useState(editing ? 'loading' : 'mode');
   const [f, setF] = useState(() => ({
     id: entryId || uid(),
-    date: initDate || todayYmd(),
+    date: preset?.date || initDate || todayYmd(),
     mode: null,
     leagueId: null,
     game: null,
@@ -150,9 +152,30 @@ export default function EntryForm({ date: initDate, entryId, onClose }) {
         <LayerHead title="어떻게 봤나요?" onBack={onClose} backLabel="✕" />
         <div className="layer-body">
           <p className="step-sub">{fmtDateFull(f.date)}</p>
+          {preset && (
+            <div className="preset-game">
+              <LeagueBadge leagueId={preset.leagueId} />
+              <TeamName team={getTeam(preset.homeId)} />
+              <span className="muted">vs</span>
+              <TeamName team={getTeam(preset.awayId)} />
+              <span className="muted small">{preset.time}</span>
+            </div>
+          )}
           <div className="choice-grid">
             {Object.entries(MODES).map(([k, m]) => (
-              <button key={k} className="choice" onClick={() => { set({ mode: k }); setStep('league'); }}>
+              <button
+                key={k}
+                className="choice"
+                onClick={() => {
+                  if (preset) {
+                    set({ mode: k, leagueId: preset.leagueId });
+                    pickGame(preset);
+                  } else {
+                    set({ mode: k });
+                    setStep('league');
+                  }
+                }}
+              >
                 <span className="choice-icon">{m.icon}</span>
                 <b>{m.label}</b>
                 <span className="muted">{m.desc}</span>
@@ -228,7 +251,7 @@ export default function EntryForm({ date: initDate, entryId, onClose }) {
   const teamList = teamsOf(g.leagueId);
   return (
     <>
-      <LayerHead title={editing ? '기록 수정' : '기록 쓰기'} onBack={() => (editing ? onClose() : setStep('game'))} />
+      <LayerHead title={editing ? '기록 수정' : '기록 쓰기'} onBack={() => (editing ? onClose() : setStep(preset && f.game?.id === preset.id ? 'mode' : 'game'))} />
       <div className="layer-body form">
         {/* 경기 정보 */}
         <section className="game-card">

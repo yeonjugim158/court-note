@@ -6,7 +6,6 @@ import CalendarView from './components/CalendarView.jsx';
 import FeedView from './components/FeedView.jsx';
 import StatsView from './components/StatsView.jsx';
 import SettingsView from './components/SettingsView.jsx';
-import DaySheet from './components/DaySheet.jsx';
 import EntryForm from './components/EntryForm.jsx';
 import EntryDetail from './components/EntryDetail.jsx';
 import ErrorBoundary from './components/ErrorBoundary.jsx';
@@ -50,8 +49,7 @@ export default function App() {
   const back = () => setStack((s) => s.slice(0, -1));
 
   const nav = {
-    openDay: (date) => push({ type: 'day', date }),
-    newEntry: (date) => push({ type: 'form', date }),
+    newEntry: (date, gameId) => push({ type: 'form', date, gameId }),
     editEntry: (entryId) => push({ type: 'form', entryId }),
     openEntry: (entryId) => push({ type: 'detail', entryId }),
     back,
@@ -80,8 +78,7 @@ export default function App() {
       {stack.map((v) => (
         <div className="layer" key={v.key}>
           <ErrorBoundary>
-            {v.type === 'day' && <DaySheet date={v.date} nav={nav} />}
-            {v.type === 'form' && <EntryForm date={v.date} entryId={v.entryId} onClose={back} />}
+            {v.type === 'form' && <EntryForm date={v.date} entryId={v.entryId} gameId={v.gameId} onClose={back} />}
             {v.type === 'detail' && <EntryDetail entryId={v.entryId} nav={nav} />}
           </ErrorBoundary>
         </div>

@@ -44,7 +44,8 @@ npm run dev
 | `src/data/schedule/uleague.json` | 대학농구 U-리그 남자부 일정·결과 (kusf.or.kr 기준, 2025·2026) |
 | `src/lib/db.js` | 기기 내 저장소 (IndexedDB) |
 | `src/lib/backup.js` | 백업 내보내기 / 불러오기 |
-| `src/components/` | 달력, 기록 작성, 상세, 기록 목록, 통계, 설정 화면 |
+| `src/components/` | 달력(+ 날짜별 일정·즐겨찾기), 기록 작성, 상세, 기록 목록, 통계, 설정 화면 |
+| `src/lib/ics.js` | 경기 → 아이폰 캘린더(.ics). 빌드 때 `ics/<경기id>.ics`로 생성 (`vite.config.js`) |
 
 ## 메모
 

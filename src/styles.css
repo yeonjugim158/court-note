@@ -343,3 +343,38 @@ h1, h2, h3, h4, p { margin: 0; }
 .help details[open] summary::after { content: '－'; }
 .help details p { font-size: 13px; color: var(--muted); padding: 0 0 12px; line-height: 1.6; }
 .warn { color: var(--loss); }
+/* ---------- 달력: 선택한 날 + 일정 ---------- */
+.cal-cell.sel:not(.photo) { background: var(--accent-weak); border: 2px solid var(--accent); }
+.cal-cell.sel.has:not(.photo) { background: color-mix(in srgb, var(--team) 24%, var(--surface)); }
+.cal-cell.photo.sel { box-shadow: inset 0 0 0 3px var(--accent); }
+.cal-cell.today:not(.sel) .cal-day { color: var(--accent); }
+.cal-star { margin-left: 2px; font-size: 10px; color: #f5b301; vertical-align: 1px; text-shadow: 0 0 2px rgba(0,0,0,0.3); }
+.cal-fav { display: inline-block; margin-left: 3px; width: 6px; height: 6px; border-radius: 50%; background: var(--c, var(--accent)); vertical-align: 2px; box-shadow: 0 0 0 1.5px var(--surface); }
+.cal-cell.photo .cal-fav { box-shadow: 0 0 0 1.5px #fff; }
+.cal-fav.inline { margin: 0; vertical-align: middle; box-shadow: none; }
+.cal-hint .cal-fav.inline { background: var(--accent); }
+
+.day-panel { margin-top: 18px; padding-bottom: 8px; }
+.day-panel-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px; }
+.day-panel-head h2 { font-size: 18px; letter-spacing: -0.02em; }
+.day-sub { display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--muted); font-weight: 600; margin: 14px 0 8px; }
+.day-empty { padding: 22px 0 8px; font-size: 14px; line-height: 1.6; }
+
+.day-game { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; }
+.day-game.fav-team { border-color: color-mix(in srgb, var(--accent) 45%, var(--line)); }
+.day-game.starred { border-color: #f5b301; }
+.day-game-row { display: flex; align-items: stretch; }
+.day-game-main { flex: 1; min-width: 0; padding: 12px 14px; text-align: left; }
+.day-game-main:active { background: var(--accent-weak); }
+.day-game-main .game-top { align-items: baseline; }
+.ellipsis { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
+.day-game-cta { display: block; margin-top: 8px; font-size: 12px; font-weight: 700; color: var(--accent); }
+.day-game-cta.done { color: var(--muted); }
+.star-btn { width: 52px; flex-shrink: 0; font-size: 22px; color: var(--muted); border-left: 1px solid var(--line); }
+.star-btn.on { color: #f5b301; }
+.star-btn:active { background: var(--accent-weak); }
+.cal-add { display: block; padding: 10px 14px; font-size: 13px; font-weight: 600; color: var(--text); text-decoration: none; border-top: 1px dashed var(--line); background: color-mix(in srgb, #f5b301 10%, var(--surface)); }
+.cal-add .muted { font-weight: 400; }
+
+.preset-game { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 10px 14px; margin-bottom: 14px; font-size: 15px; }
+.preset-game .small { margin-left: auto; }

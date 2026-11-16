@@ -50,3 +50,11 @@ export async function loadPhotos(entryId) {
   const list = await db.photos.where('entryId').equals(entryId).toArray();
   return list.sort((a, b) => a.order - b.order);
 }
+
+/** 경기 즐겨찾기 켜기/끄기 → 켜졌으면 true */
+export async function toggleFavGame(gameId) {
+  const list = (await getSetting('favGames')) || [];
+  const on = !list.includes(gameId);
+  await setSetting('favGames', on ? [...list, gameId] : list.filter((id) => id !== gameId));
+  return on;
+}

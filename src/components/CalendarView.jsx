@@ -4,10 +4,12 @@ import { db, setSetting } from '../lib/db.js';
 import { BACKUP_REMIND_DAYS, daysSince } from '../lib/backup.js';
 import { pad, parseYmd, todayYmd, WEEKDAYS } from '../lib/date.js';
 import { resultOf, sortEntries } from '../lib/entry.js';
-import { useCoverThumb, useObjectUrl, useSetting } from '../lib/hooks.js';
-import { getLeague } from '../data/teams.js';
+import { useCoverThumb, useFavGames, useFavTeams, useObjectUrl, useSetting } from '../lib/hooks.js';
+import { getLeague, getTeam } from '../data/teams.js';
+import { getGames } from '../data/games.js';
+import DayPanel from './DayPanel.jsx';
 
-function Cell({ day, ds, entries, isToday, onClick }) {
+function Cell({ day, ds, entries, isToday, selected, mark, onClick }) {
   const cover = entries.find((e) => e.coverPhotoId) || entries[0];
   const thumb = useCoverThumb(cover);
   const url = useObjectUrl(thumb);
@@ -18,7 +20,7 @@ function Cell({ day, ds, entries, isToday, onClick }) {
 
   return (
     <button
-      className={'cal-cell' + (entries.length ? ' has' : '') + (url ? ' photo' : '') + (isToday ? ' today' : '')}
+      className={'cal-cell' + (entries.length ? ' has' : '') + (url ? ' photo' : '') + (isToday ? ' today' : '') + (selected ? ' sel' : '')}
       style={
         url
           ? { backgroundImage: `url(${url})` }
@@ -27,9 +29,13 @@ function Cell({ day, ds, entries, isToday, onClick }) {
             : undefined
       }
       onClick={onClick}
-      aria-label={`${ds}${entries.length ? `, 기록 ${entries.length}개` : ''}`}
+      aria-pressed={selected}
+      aria-label={`${ds}${entries.length ? `, 기록 ${entries.length}개` : ''}${mark?.star ? ', 즐겨찾기 경기' : mark?.color ? ', 응원팀 경기' : ''}`}
     >
-      <span className={'cal-day' + (dow === 0 ? ' sun' : dow === 6 ? ' sat' : '')}>{day}</span>
+      <span className={'cal-day' + (dow === 0 ? ' sun' : dow === 6 ? ' sat' : '')}>
+        {day}
+        {mark && (mark.star ? <span className="cal-star">★</span> : <i className="cal-fav" style={{ '--c': mark.color }} />)}
+      </span>
       {cover && (
         <>
           <span className="cal-modes">
@@ -77,6 +83,9 @@ function BackupBanner({ goSettings }) {
 export default function CalendarView({ nav, weekStart = 0, goSettings }) {
   const now = new Date();
   const [ym, setYm] = useState({ y: now.getFullYear(), m: now.getMonth() });
+  const [sel, setSel] = useState(todayYmd());
+  const favGames = useFavGames();
+  const fav = useFavTeams();
   const touch = useRef(null);
 
   const start = `${ym.y}-${pad(ym.m + 1)}-01`;
@@ -97,13 +106,25 @@ export default function CalendarView({ nav, weekStart = 0, goSettings }) {
   const liveRes = live.map(resultOf).filter((r) => r === 'W' || r === 'L');
   const wins = liveRes.filter((r) => r === 'W').length;
 
-  const move = (delta) =>
-    setYm(({ y, m }) => {
-      const d = new Date(y, m + delta, 1);
-      return { y: d.getFullYear(), m: d.getMonth() };
-    });
-
   const today = todayYmd();
+  // 달 이동: 이번 달이면 오늘, 아니면 1일을 선택
+  const goMonth = (y, m) => {
+    setYm({ y, m });
+    const first = `${y}-${pad(m + 1)}-01`;
+    setSel(today.slice(0, 7) === first.slice(0, 7) ? today : first);
+  };
+  const move = (delta) => {
+    const d = new Date(ym.y, ym.m + delta, 1);
+    goMonth(d.getFullYear(), d.getMonth());
+  };
+
+  // 응원팀 경기(점) · 즐겨찾기 경기(★) 표시
+  const markOf = (ds) => {
+    const games = [...getGames('kbl', ds), ...getGames('uleague', ds)];
+    if (games.some((g) => favGames.includes(g.id))) return { star: true };
+    const g = games.find((g) => [g.homeId, g.awayId].includes(fav[g.leagueId]));
+    return g ? { color: getTeam(fav[g.leagueId]).color } : null;
+  };
   const cells = [];
   for (let i = 0; i < offset; i++) cells.push(<div key={'b' + i} className="cal-blank" />);
   for (let d = 1; d <= daysInMonth; d++) {
@@ -116,7 +137,9 @@ export default function CalendarView({ nav, weekStart = 0, goSettings }) {
         ds={ds}
         entries={list}
         isToday={ds === today}
-        onClick={() => (list.length ? nav.openDay(ds) : nav.newEntry(ds))}
+        selected={ds === sel}
+        mark={markOf(ds)}
+        onClick={() => setSel(ds)}
       />
     );
   }
@@ -131,7 +154,7 @@ export default function CalendarView({ nav, weekStart = 0, goSettings }) {
         <button className="icon-btn" onClick={() => move(1)} aria-label="다음 달">›</button>
         <button
           className="today-btn"
-          onClick={() => setYm({ y: now.getFullYear(), m: now.getMonth() })}
+          onClick={() => goMonth(now.getFullYear(), now.getMonth())}
         >
           오늘
         </button>
@@ -166,9 +189,9 @@ export default function CalendarView({ nav, weekStart = 0, goSettings }) {
         {cells}
       </div>
 
-      <p className="cal-hint muted">날짜를 눌러 기록을 남겨요 · 좌우로 밀어 달 이동</p>
+      <p className="cal-hint muted">★ 즐겨찾기 경기 · <i className="cal-fav inline" /> 응원팀 경기 · 좌우로 밀어 달 이동</p>
 
-      <button className="fab" onClick={() => nav.newEntry(today)} aria-label="오늘 기록하기">＋</button>
+      <DayPanel date={sel} nav={nav} />
     </section>
   );
 }
