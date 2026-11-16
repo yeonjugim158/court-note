@@ -1,7 +1,8 @@
-// 경기 1개 → 아이폰 캘린더용 .ics 파일 내용
+// 팀별 구독 캘린더(.ics)
+// 빌드 때(vite.config.js) 팀마다 ics/team-<팀id>.ics 로 만들어 두고,
+// 앱 설정에서 webcal:// 링크로 구독합니다. (홈 화면 앱에서도 아이폰 "구독" 창이 바로 뜸)
+// 일정이 바뀌거나 결과가 나오면 다음 빌드 때 파일이 갱신되고, 아이폰이 주기적으로 다시 받아 갑니다.
 // 알림: 경기 당일 오전 10시(경기가 11시 이후일 때) + 경기 1시간 전
-// 빌드 때(vite.config.js) 경기마다 ics/<경기id>.ics 정적 파일로 만들어 둡니다.
-// (아이폰 홈 화면 앱에서는 정적 .ics 주소를 열어야 "캘린더에 추가" 화면이 가장 확실하게 떠요)
 
 const STAGE_LABEL = {
   preseason: '오픈매치데이', regular: '정규리그', po: '플레이오프', final: '챔피언결정전',
@@ -11,21 +12,21 @@ const LEAGUE_LABEL = { kbl: 'KBL', uleague: 'U-리그' };
 
 const esc = (s) => String(s ?? '').replace(/\\/g, '\\\\').replace(/\n/g, '\\n').replace(/([,;])/g, '\\$1');
 const p2 = (n) => String(n).padStart(2, '0');
+const enc = new TextEncoder();
 
-/** KST 날짜·시각 → UTC 'YYYYMMDDTHHMMSSZ' */
-function utcStamp(date, time) {
+/** KST 날짜·시각 → UTC 'YYYYMMDDTHHMMSSZ' (24시 넘는 값도 자동 보정) */
+function utcStamp(date, hh, mm) {
   const [y, m, d] = date.split('-').map(Number);
-  const [hh, mm] = time.split(':').map(Number);
   const t = new Date(Date.UTC(y, m - 1, d, hh - 9, mm));
   return `${t.getUTCFullYear()}${p2(t.getUTCMonth() + 1)}${p2(t.getUTCDate())}T${p2(t.getUTCHours())}${p2(t.getUTCMinutes())}00Z`;
 }
 
-/** 75자 넘는 줄 접기 (RFC 5545) */
+/** 75바이트 넘는 줄 접기 (RFC 5545) */
 function fold(line) {
   const out = [];
   let cur = '';
   for (const ch of line) {
-    if (new TextEncoder().encode(cur + ch).length > 73) {
+    if (enc.encode(cur + ch).length > 73) {
       out.push(cur);
       cur = ' ' + ch;
     } else cur += ch;
@@ -39,38 +40,59 @@ const alarm = (minutesBefore, text) => [
 ];
 
 /**
- * @param g { id, leagueId, date, time, stage, venue }
- * @param home, away 팀 { name, short }
- * @param appUrl 앱 주소 (선택)
+ * 경기 1개 → VEVENT 줄 목록
+ * @param g { id, leagueId, date, time, stage, venue, homeScore, awayScore }
  */
-export function makeIcs(g, home, away, appUrl = '') {
-  const title = `🏀 ${home.short} vs ${away.short}`;
-  const league = LEAGUE_LABEL[g.leagueId] || '';
+export function gameEvent(g, home, away, appUrl = '') {
+  const done = g.homeScore != null && g.awayScore != null;
+  const title = done
+    ? `🏀 ${home.short} ${g.homeScore}:${g.awayScore} ${away.short}`
+    : `🏀 ${home.short} vs ${away.short}`;
   const lines = [
-    'BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//court-note//KO', 'CALSCALE:GREGORIAN', 'METHOD:PUBLISH',
     'BEGIN:VEVENT',
     `UID:${g.id}@court-note`,
-    `DTSTAMP:${utcStamp(g.date, '09:00')}`,
+    `DTSTAMP:${utcStamp(g.date, 9, 0)}`,
     `SUMMARY:${esc(title)}`,
     `LOCATION:${esc(g.venue)}`,
-    `DESCRIPTION:${esc(`${league} ${STAGE_LABEL[g.stage] || ''}\n${home.name} vs ${away.name}${appUrl ? `\n\n코트노트에서 기록하기: ${appUrl}` : ''}`)}`,
+    `DESCRIPTION:${esc(
+      `${LEAGUE_LABEL[g.leagueId] || ''} ${STAGE_LABEL[g.stage] || ''}\n${home.name} vs ${away.name}` +
+        (done ? `\n최종 ${g.homeScore} : ${g.awayScore}` : '') +
+        (appUrl ? `\n\n코트노트에서 기록하기: ${appUrl}` : '')
+    )}`,
   ];
   if (appUrl) lines.push(`URL:${appUrl}`);
 
-  if (/^\d{1,2}:\d{2}$/.test(g.time || '')) {
-    const [hh, mm] = g.time.split(':').map(Number);
+  const m = /^(\d{1,2}):(\d{2})$/.exec(g.time || '');
+  if (m) {
+    const hh = Number(m[1]), mm = Number(m[2]);
     const startMin = hh * 60 + mm;
-    lines.push(`DTSTART:${utcStamp(g.date, g.time)}`);
-    lines.push(`DTEND:${utcStamp(g.date, `${Math.floor((startMin + 120) / 60)}:${p2((startMin + 120) % 60)}`)}`);
-    if (startMin - 600 > 60) lines.push(...alarm(startMin - 600, `오늘 ${g.time} ${home.short} vs ${away.short} 경기가 있어요`));
-    lines.push(...alarm(60, `1시간 뒤 ${home.short} vs ${away.short} 경기 시작!`));
+    lines.push(`DTSTART:${utcStamp(g.date, hh, mm)}`, `DTEND:${utcStamp(g.date, hh + 2, mm)}`);
+    if (!done) {
+      if (startMin - 600 > 60) lines.push(...alarm(startMin - 600, `오늘 ${g.time} ${home.short} vs ${away.short} 경기가 있어요`));
+      lines.push(...alarm(60, `1시간 뒤 ${home.short} vs ${away.short} 경기 시작!`));
+    }
   } else {
-    const next = new Date(`${g.date}T12:00:00`);
-    next.setDate(next.getDate() + 1);
-    lines.push(`DTSTART;VALUE=DATE:${g.date.replaceAll('-', '')}`);
-    lines.push(`DTEND;VALUE=DATE:${next.getFullYear()}${p2(next.getMonth() + 1)}${p2(next.getDate())}`);
+    const next = new Date(`${g.date}T12:00:00Z`);
+    next.setUTCDate(next.getUTCDate() + 1);
+    lines.push(
+      `DTSTART;VALUE=DATE:${g.date.replaceAll('-', '')}`,
+      `DTEND;VALUE=DATE:${next.toISOString().slice(0, 10).replaceAll('-', '')}`
+    );
   }
+  lines.push('END:VEVENT');
+  return lines;
+}
 
-  lines.push('END:VEVENT', 'END:VCALENDAR');
+/** 여러 경기 → 구독용 캘린더 파일 */
+export function makeCalendar(name, events) {
+  const lines = [
+    'BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//court-note//KO', 'CALSCALE:GREGORIAN', 'METHOD:PUBLISH',
+    `X-WR-CALNAME:${esc(name)}`,
+    'X-WR-TIMEZONE:Asia/Seoul',
+    'REFRESH-INTERVAL;VALUE=DURATION:PT3H',
+    'X-PUBLISHED-TTL:PT3H',
+    ...events.flat(),
+    'END:VCALENDAR',
+  ];
   return lines.map(fold).join('\r\n') + '\r\n';
 }

@@ -45,7 +45,7 @@ npm run dev
 | `src/lib/db.js` | 기기 내 저장소 (IndexedDB) |
 | `src/lib/backup.js` | 백업 내보내기 / 불러오기 |
 | `src/components/` | 달력(+ 날짜별 일정·즐겨찾기), 기록 작성, 상세, 기록 목록, 통계, 설정 화면 |
-| `src/lib/ics.js` | 경기 → 아이폰 캘린더(.ics). 빌드 때 `ics/<경기id>.ics`로 생성 (`vite.config.js`) |
+| `src/lib/ics.js` | 팀별 구독 캘린더(.ics, 알림 포함). 빌드 때 `ics/team-<팀id>.ics`로 생성 (`vite.config.js`), 설정에서 webcal:// 로 구독 |
 
 ## 메모
 

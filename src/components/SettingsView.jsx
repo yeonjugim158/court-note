@@ -6,11 +6,18 @@ import { exportBackup, importBackup, daysSince, BACKUP_REMIND_DAYS } from '../li
 import { LEAGUES, teamsOf, getTeam } from '../data/teams.js';
 import { SCHEDULE_META, fmtUpdated, checkedAt } from '../data/games.js';
 
-const APP_VERSION = '0.2';
+const APP_VERSION = '0.3';
+
+/** 팀 구독 캘린더 webcal:// 주소 (아이폰이 바로 "구독" 창을 띄움) */
+const webcalUrl = (teamId) => {
+  const u = new URL(`./ics/team-${teamId}.ics`, location.href);
+  return `webcal://${u.host}${u.pathname}`;
+};
 
 const HELP = [
   ['기록은 어떻게 남겨요?', '달력에서 날짜를 누르면 아래에 그날 경기가 나와요. 경기를 누르고 직관/집관만 고르면 팀·경기장·스코어가 자동으로 채워져요. 목록에 없는 경기는 "＋ 기록"에서 직접 입력하세요.'],
-  ['경기 즐겨찾기와 알림은요?', '앞으로 열릴 경기의 ☆을 누르면 즐겨찾기가 되고 달력에 ★로 표시돼요. "아이폰 캘린더에 추가"를 누르면 캘린더 앱에 경기가 들어가고, 당일 오전 10시와 경기 1시간 전에 알림이 와요. 즐겨찾기를 풀어도 캘린더 일정은 캘린더 앱에서 직접 지워야 해요.'],
+  ['경기 알림은 어떻게 받아요?', '설정의 "경기 알림"에서 응원팀 경기 캘린더를 구독하세요. 구독할 때 "알림 제거"를 꺼야 경기 당일 오전 10시와 1시간 전에 알림이 와요. 아이폰이 몇 시간마다 일정을 다시 받아 와서, 시간 변경이나 결과도 캘린더에 반영돼요.'],
+  ['☆ 즐겨찾기는 뭐예요?', '보러 갈 경기, 챙겨 볼 경기를 표시해 두는 기능이에요. 달력에 ★로 보여요. (알림은 응원팀 캘린더 구독으로 받아요)'],
   ['달력 대표 사진은 어떻게 바꿔요?', '기록 수정 화면의 사진 칸에서 원하는 사진을 한 번 누르면 "대표"로 바뀌어요. 하루에 경기가 여러 개면 첫 번째 기록의 대표 사진이 달력에 보여요.'],
   ['기록을 고치거나 지우고 싶어요', '기록을 열고 오른쪽 위 "수정"을 누르세요. 삭제는 기록 화면 맨 아래에 있어요. 삭제하면 사진도 함께 지워지고 되돌릴 수 없어요.'],
   ['목록에 경기가 없어요', 'D리그·EASL·올스타전, 연습경기는 일정에 없어요. 경기 선택 화면의 "목록에 없어요 · 직접 입력"으로 팀과 경기장을 직접 적어 주세요.'],
@@ -105,6 +112,36 @@ export default function SettingsView() {
             aria-label="응원팀 색으로 꾸미기"
           />
         </div>
+      </div>
+
+      {/* 경기 캘린더 구독 */}
+      <div className="panel">
+        <h3>경기 알림 (아이폰 캘린더)</h3>
+        <p className="muted small">
+          응원팀 경기 일정을 아이폰 캘린더에 구독해요. 한 번만 해 두면 일정이 바뀌거나 결과가 나와도 캘린더에 자동으로 반영되고,
+          <b> 경기 당일 오전 10시</b>와 <b>1시간 전</b>에 알림이 와요.
+        </p>
+        {LEAGUES.filter((l) => fav[l.id]).length === 0 && <p className="small warn" style={{ marginTop: 8 }}>위에서 응원팀을 먼저 골라 주세요.</p>}
+        <div className="btn-col">
+          {LEAGUES.filter((l) => fav[l.id]).map((l) => {
+            const t = getTeam(fav[l.id]);
+            return (
+              <a key={l.id} className="btn primary block sub-btn" href={webcalUrl(t.id)} style={{ '--c': t.color }}>
+                📅 {t.short} 경기 캘린더 구독하기
+              </a>
+            );
+          })}
+        </div>
+        {LEAGUES.some((l) => fav[l.id]) && (
+          <ol className="steps small">
+            <li>버튼을 누르고 <b>구독</b>을 눌러요.</li>
+            <li>다음 화면에서 <b>"알림 제거"를 꺼야</b> 알림이 와요. (기본값이 켜져 있어요)</li>
+            <li>오른쪽 위 <b>추가</b>를 누르면 끝!</li>
+          </ol>
+        )}
+        <p className="muted small" style={{ marginTop: 8 }}>
+          구독 취소: 캘린더 앱 → 아래 "캘린더" → 코트노트 캘린더의 ⓘ → 구독 취소
+        </p>
       </div>
 
       {/* 화면 */}

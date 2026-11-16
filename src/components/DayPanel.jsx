@@ -1,5 +1,5 @@
 // 달력 아래: 고른 날짜의 내 기록 + 그날 경기 일정
-// 경기를 누르면 그 경기로 바로 기록, ☆로 즐겨찾기, 즐겨찾기한 경기는 아이폰 캘린더에 알림 추가
+// 경기를 누르면 그 경기로 바로 기록, ☆로 즐겨찾기(달력에 ★ 표시)
 import { useLiveQuery } from 'dexie-react-hooks';
 import { db, toggleFavGame } from '../lib/db.js';
 import { fmtDateFull, todayYmd } from '../lib/date.js';
@@ -42,13 +42,6 @@ function GameRow({ g, recorded, starred, upcoming, isFavTeam, nav }) {
           </button>
         )}
       </div>
-      {upcoming && starred && (
-        // 홈 화면 앱(standalone) 안에서는 .ics를 열어도 아무 반응이 없어서,
-        // 새 창(사파리 화면)으로 열어 아이폰의 "캘린더에 추가" 화면이 뜨게 함
-        <a className="cal-add" href={`./ics/${g.id}.ics`} target="_blank" rel="noopener">
-          📅 아이폰 캘린더에 추가 <span className="muted">· 당일 오전 10시, 1시간 전 알림</span>
-        </a>
-      )}
     </div>
   );
 }

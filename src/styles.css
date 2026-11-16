@@ -373,8 +373,10 @@ h1, h2, h3, h4, p { margin: 0; }
 .star-btn { width: 52px; flex-shrink: 0; font-size: 22px; color: var(--muted); border-left: 1px solid var(--line); }
 .star-btn.on { color: #f5b301; }
 .star-btn:active { background: var(--accent-weak); }
-.cal-add { display: block; padding: 10px 14px; font-size: 13px; font-weight: 600; color: var(--text); text-decoration: none; border-top: 1px dashed var(--line); background: color-mix(in srgb, #f5b301 10%, var(--surface)); }
-.cal-add .muted { font-weight: 400; }
 
 .preset-game { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 10px 14px; margin-bottom: 14px; font-size: 15px; }
 .preset-game .small { margin-left: auto; }
+
+/* ---------- 설정: 캘린더 구독 ---------- */
+.btn-col .sub-btn { margin-top: 12px; text-decoration: none; background: var(--c, var(--accent)); color: #fff; }
+.steps { margin: 12px 0 0; padding-left: 20px; line-height: 1.7; }
