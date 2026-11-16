@@ -43,7 +43,9 @@ function GameRow({ g, recorded, starred, upcoming, isFavTeam, nav }) {
         )}
       </div>
       {upcoming && starred && (
-        <a className="cal-add" href={`./ics/${g.id}.ics`}>
+        // 홈 화면 앱(standalone) 안에서는 .ics를 열어도 아무 반응이 없어서,
+        // 새 창(사파리 화면)으로 열어 아이폰의 "캘린더에 추가" 화면이 뜨게 함
+        <a className="cal-add" href={`./ics/${g.id}.ics`} target="_blank" rel="noopener">
           📅 아이폰 캘린더에 추가 <span className="muted">· 당일 오전 10시, 1시간 전 알림</span>
         </a>
       )}
