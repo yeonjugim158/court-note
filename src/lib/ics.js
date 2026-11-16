@@ -2,7 +2,7 @@
 // 빌드 때(vite.config.js) 팀마다 ics/team-<팀id>.ics 로 만들어 두고,
 // 앱 설정에서 webcal:// 링크로 구독합니다. (홈 화면 앱에서도 아이폰 "구독" 창이 바로 뜸)
 // 일정이 바뀌거나 결과가 나오면 다음 빌드 때 파일이 갱신되고, 아이폰이 주기적으로 다시 받아 갑니다.
-// 알림: 경기 당일 오전 10시(경기가 11시 이후일 때) + 경기 1시간 전
+// 알림: 경기 1일 전 · 1시간 전 · 10분 전
 
 const STAGE_LABEL = {
   preseason: '오픈매치데이', regular: '정규리그', po: '플레이오프', final: '챔피언결정전',
@@ -35,8 +35,8 @@ function fold(line) {
   return out.join('\r\n');
 }
 
-const alarm = (minutesBefore, text) => [
-  'BEGIN:VALARM', 'ACTION:DISPLAY', `DESCRIPTION:${esc(text)}`, `TRIGGER:-PT${minutesBefore}M`, 'END:VALARM',
+const alarm = (trigger, text) => [
+  'BEGIN:VALARM', 'ACTION:DISPLAY', `DESCRIPTION:${esc(text)}`, `TRIGGER:${trigger}`, 'END:VALARM',
 ];
 
 /**
@@ -65,11 +65,14 @@ export function gameEvent(g, home, away, appUrl = '') {
   const m = /^(\d{1,2}):(\d{2})$/.exec(g.time || '');
   if (m) {
     const hh = Number(m[1]), mm = Number(m[2]);
-    const startMin = hh * 60 + mm;
     lines.push(`DTSTART:${utcStamp(g.date, hh, mm)}`, `DTEND:${utcStamp(g.date, hh + 2, mm)}`);
     if (!done) {
-      if (startMin - 600 > 60) lines.push(...alarm(startMin - 600, `오늘 ${g.time} ${home.short} vs ${away.short} 경기가 있어요`));
-      lines.push(...alarm(60, `1시간 뒤 ${home.short} vs ${away.short} 경기 시작!`));
+      const vs = `${home.short} vs ${away.short}`;
+      lines.push(
+        ...alarm('-P1D', `내일 ${g.time} ${vs} 경기가 있어요`),
+        ...alarm('-PT1H', `1시간 뒤 ${vs} 경기 시작!`),
+        ...alarm('-PT10M', `10분 뒤 ${vs} 팁오프!`)
+      );
     }
   } else {
     const next = new Date(`${g.date}T12:00:00Z`);
