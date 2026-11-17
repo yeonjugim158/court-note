@@ -8,6 +8,7 @@ import { useFavGames, useFavTeams } from '../lib/hooks.js';
 import { LEAGUES, STAGES, getTeam } from '../data/teams.js';
 import { getGames, isFinished } from '../data/games.js';
 import { EntryCard, LeagueBadge, TeamName } from './ui.jsx';
+import { ChannelChips } from './GameLinks.jsx';
 
 function GameRow({ g, recorded, starred, upcoming, isFavTeam, nav }) {
   const h = getTeam(g.homeId), a = getTeam(g.awayId);
@@ -29,7 +30,10 @@ function GameRow({ g, recorded, starred, upcoming, isFavTeam, nav }) {
             <span className="score">{done ? `${g.homeScore} : ${g.awayScore}` : 'vs'}</span>
             <TeamName team={a} />
           </div>
-          <span className={'day-game-cta' + (recorded ? ' done' : '')}>{recorded ? '✓ 기록함 · 보기' : '기록하기 ›'}</span>
+          <span className="day-game-foot">
+            <span className={'day-game-cta' + (recorded ? ' done' : '')}>{recorded ? '✓ 기록함 · 보기' : '기록하기 ›'}</span>
+            <ChannelChips gameId={g.id} finished={done} />
+          </span>
         </button>
         {upcoming && (
           <button

@@ -8,6 +8,7 @@ import { LEAGUES, STAGES, teamsOf, getLeague } from '../data/teams.js';
 import { getGame, getGames, isFinished, snapshotGame, checkedAt, fmtUpdated } from '../data/games.js';
 import { getTeam } from '../data/teams.js';
 import { LayerHead, LeagueBadge, TeamName } from './ui.jsx';
+import MvpPicker from './MvpPicker.jsx';
 
 const MAX_PHOTOS = 10;
 
@@ -29,6 +30,7 @@ export default function EntryForm({ date: initDate, entryId, gameId, onClose }) 
     score: { home: '', away: '' },
     diary: '',
     mvp: '',
+    mvpPlayer: null,
     highlight: '',
     mood: null,
     seatZone: '',
@@ -74,6 +76,7 @@ export default function EntryForm({ date: initDate, entryId, gameId, onClose }) 
       game: snapshotGame(g),
       cheer: favId === g.homeId ? 'home' : favId === g.awayId ? 'away' : 'none',
       score: isFinished(g) ? { home: g.homeScore, away: g.awayScore } : { home: '', away: '' },
+      ...(f.mvpPlayer && f.game?.id !== g.id && { mvp: '', mvpPlayer: null }), // 다른 경기로 바꾸면 고른 선수 해제
     });
     setStep('form');
   };
@@ -331,10 +334,17 @@ export default function EntryForm({ date: initDate, entryId, gameId, onClose }) 
           <textarea rows={6} value={f.diary} placeholder="오늘 경기는 어땠나요?" onChange={(e) => set({ diary: e.target.value })} />
         </Field>
 
-        <div className="two-col">
-          <Field label="오늘의 MVP">
-            <input value={f.mvp} placeholder="선수 이름" onChange={(e) => set({ mvp: e.target.value })} />
-          </Field>
+        <Field label="오늘의 MVP">
+          <MvpPicker
+            game={g}
+            cheer={f.cheer}
+            value={f.mvp}
+            player={f.mvpPlayer}
+            onChange={(mvp, mvpPlayer) => set({ mvp, mvpPlayer })}
+          />
+        </Field>
+
+        <div>
           <Field label="만족도">
             <div className="moods">
               {MOODS.map((m, i) => (

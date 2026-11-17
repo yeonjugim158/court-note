@@ -5,6 +5,7 @@ import { fillFinishedScores } from './lib/sync.js';
 import CalendarView from './components/CalendarView.jsx';
 import FeedView from './components/FeedView.jsx';
 import StatsView from './components/StatsView.jsx';
+import NewsView from './components/NewsView.jsx';
 import SettingsView from './components/SettingsView.jsx';
 import EntryForm from './components/EntryForm.jsx';
 import EntryDetail from './components/EntryDetail.jsx';
@@ -13,6 +14,7 @@ import ErrorBoundary from './components/ErrorBoundary.jsx';
 const TABS = [
   { id: 'calendar', label: '달력', icon: '🗓️' },
   { id: 'feed', label: '기록', icon: '📒' },
+  { id: 'news', label: '소식', icon: '📰' },
   { id: 'stats', label: '통계', icon: '📊' },
   { id: 'settings', label: '설정', icon: '⚙️' },
 ];
@@ -61,6 +63,7 @@ export default function App() {
         <ErrorBoundary key={tab}>
           {tab === 'calendar' && <CalendarView nav={nav} weekStart={prefs.weekStart} goSettings={() => setTab('settings')} />}
           {tab === 'feed' && <FeedView nav={nav} />}
+          {tab === 'news' && <NewsView />}
           {tab === 'stats' && <StatsView />}
           {tab === 'settings' && <SettingsView />}
         </ErrorBoundary>

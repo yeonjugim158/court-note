@@ -39,7 +39,11 @@ npm run dev
 | `src/data/teams.js` | 리그·팀·홈구장·팀컬러 |
 | `src/data/games.js` | 경기 일정 로딩 |
 | `src/data/schedule/meta.json` | 리그별 마지막 업데이트 시각·출처 |
-| `scripts/update-kbl.mjs` | KBL 일정 자동 업데이트 스크립트 |
+| `scripts/update-kbl.mjs` | KBL 일정 자동 업데이트 + 선수 기록·명단·하이라이트·중계 채널 수집 |
+| `public/data/extra.json` | 경기별 KBL 경기키·중계 채널·하이라이트 유튜브 id·진행 중 스코어 |
+| `public/data/box/<경기id>.json` | 끝난 경기 선수 기록 (MVP 선택용) |
+| `public/data/rosters.json` | 팀별 등록 선수 (하루 1번) |
+| `src/lib/remote.js` | `public/data` 를 앱 실행 중에 불러오기, 중계 채널 이름·바깥 링크 |
 | `src/data/schedule/kbl.json` | KBL 일정·결과 (kbl.or.kr 기준, 2025-26·2026-27) |
 | `src/data/schedule/uleague.json` | 대학농구 U-리그 남자부 일정·결과 (kusf.or.kr 기준, 2025·2026) |
 | `src/lib/db.js` | 기기 내 저장소 (IndexedDB) |

@@ -5,6 +5,7 @@ import { MODES, MOODS, resultOf, hasScore } from '../lib/entry.js';
 import { useObjectUrl } from '../lib/hooks.js';
 import { STAGES } from '../data/teams.js';
 import { LayerHead, LeagueBadge, ResultChip, TeamName } from './ui.jsx';
+import GameLinks from './GameLinks.jsx';
 
 function Slide({ photo }) {
   const url = useObjectUrl(photo.blob);
@@ -31,7 +32,7 @@ export default function EntryDetail({ entryId, nav }) {
   };
 
   const rows = [
-    ['오늘의 MVP', entry.mvp],
+    ['오늘의 MVP', entry.mvpPlayer?.no ? `#${entry.mvpPlayer.no} ${entry.mvp}` : entry.mvp],
     ['명장면', entry.highlight],
     ['만족도', entry.mood ? MOODS[entry.mood - 1] : ''],
     isLive ? ['좌석', [entry.seatZone, entry.seatDetail].filter(Boolean).join(' · ')] : ['시청 방법', entry.watchVia],
@@ -68,6 +69,8 @@ export default function EntryDetail({ entryId, nav }) {
           </div>
           {(g.venue || g.time) && <div className="muted small center">{[g.time, g.venue].filter(Boolean).join(' · ')}</div>}
         </section>
+
+        <GameLinks g={g} date={entry.date} finished={hasScore(entry)} />
 
         {entry.diary && <p className="diary">{entry.diary}</p>}
 
