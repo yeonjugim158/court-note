@@ -8,7 +8,7 @@ on:
   push:
     branches: [main]
   schedule:
-    - cron: '*/30 4-15 * * *' # UTC 04:00~15:59 = KST 13:00~00:59
+    - cron: '7,37 4-15 * * *' # UTC 04~15시 = KST 13:07~00:37 (정각·30분은 GitHub이 자주 건너뛰어 7분·37분에)
   workflow_dispatch: {}
 
 permissions:
