@@ -8,10 +8,7 @@
 npm install
 npm run dev
 ```
-
-- PC: http://localhost:5173
-- 아이폰: PC와 같은 와이파이에 연결 후 `http://<PC의 와이파이 IP>:5173`
-  (실행 시 터미널에 표시되는 `Network:` 주소)
+- https://yeonjugim158.github.io/court-note/
 
 ## 경기 일정 업데이트
 
