@@ -466,3 +466,10 @@ h1, h2, h3, h4, p { margin: 0; }
 .imp-src { margin: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .imp-actions { position: sticky; bottom: 0; display: grid; grid-template-columns: auto 1fr; gap: 8px; padding: 12px 0 calc(12px + env(safe-area-inset-bottom)); background: var(--bg); margin-top: 12px; }
 .imp-year { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+
+/* 단계 직접 입력 */
+.stage-custom { display: flex; align-items: center; gap: 8px; }
+.stage-custom input { flex: 1; min-width: 0; }
+.imp-row .imp-stage, .imp-row .stage-custom { grid-column: 1 / -1; }
+.custom-teams .stage-custom { grid-column: 1 / -1; }
+.imp-year .imp-all-stage, .imp-year .stage-custom { width: 62%; font-size: 14px; padding: 6px 8px; }

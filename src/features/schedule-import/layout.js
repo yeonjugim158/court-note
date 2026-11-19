@@ -85,7 +85,7 @@ export function parseTable(rows, today = new Date()) {
   const out = [];
   const allText = rowsToText(rows);
   // "제42회 MBC배 …대회" 같은 대회 일정표면 컵대회로 (제목이 일부 깨져도 "제42회"·"MBC"로 알아봄)
-  const stage = /대회|배\s|제\s*\d+\s*회|MBC/.test(allText) ? 'cup' : /플레이\s*오프/.test(allText) ? 'po' : 'regular';
+  const stage = /MBC|엠비씨/i.test(allText) ? 'mbc' : /대회|배\s|제\s*\d+\s*회/.test(allText) ? 'cup' : /플레이\s*오프/.test(allText) ? 'po' : 'regular';
 
   for (const row of rows) {
     const { s, at } = rowString(row);

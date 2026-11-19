@@ -5,7 +5,7 @@ import { db, toggleFavGame } from '../lib/db.js';
 import { fmtDateFull, todayYmd } from '../lib/date.js';
 import { sortEntries } from '../lib/entry.js';
 import { useFavGames, useFavTeams } from '../lib/hooks.js';
-import { LEAGUES, STAGES, getTeam } from '../data/teams.js';
+import { LEAGUES, getTeam, stageLabel } from '../data/teams.js';
 import { getGames, isFinished } from '../data/games.js';
 import { EntryCard, LeagueBadge, TeamName } from './ui.jsx';
 import { ChannelChips } from './GameLinks.jsx';
@@ -23,7 +23,7 @@ function GameRow({ g, recorded, starred, upcoming, isFavTeam, nav }) {
         >
           <div className="game-top">
             <b>{g.time || '시간 미정'}</b>
-            <span>{STAGES[g.stage]}</span>
+            <span>{stageLabel(g.stage)}</span>
             <span className="muted ellipsis">{g.venue}</span>
           </div>
           <div className="game-teams">

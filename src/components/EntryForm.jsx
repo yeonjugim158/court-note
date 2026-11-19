@@ -4,10 +4,10 @@ import { fmtDate, fmtDateFull, todayYmd } from '../lib/date.js';
 import { processImage } from '../lib/image.js';
 import { useFavTeams } from '../lib/hooks.js';
 import { MODES, MOODS, SEAT_ZONES, WATCH_VIA } from '../lib/entry.js';
-import { LEAGUES, STAGES, teamsOf, getLeague } from '../data/teams.js';
+import { LEAGUES, teamsOf, getLeague, stageLabel } from '../data/teams.js';
 import { getGame, getGames, isFinished, snapshotGame, checkedAt, fmtUpdated } from '../data/games.js';
 import { getTeam } from '../data/teams.js';
-import { LayerHead, LeagueBadge, TeamName } from './ui.jsx';
+import { LayerHead, LeagueBadge, StageSelect, TeamName } from './ui.jsx';
 import MvpPicker from './MvpPicker.jsx';
 
 const MAX_PHOTOS = 10;
@@ -229,7 +229,7 @@ export default function EntryForm({ date: initDate, entryId, gameId, presetGame,
                 <button key={g.id} className="game-item" onClick={() => pickGame(g)}>
                   <div className="game-top">
                     <span>{g.time}</span>
-                    <span>{STAGES[g.stage]}</span>
+                    <span>{stageLabel(g.stage)}</span>
                     <span className="muted">{g.venue}</span>
                   </div>
                   <div className="game-teams">
@@ -273,16 +273,14 @@ export default function EntryForm({ date: initDate, entryId, gameId, presetGame,
               <span>vs</span>
               <input list="team-dl" placeholder="원정팀" value={g.away.name} onChange={(e) => setCustomTeam('away', e.target.value)} />
               <input className="full" placeholder="경기장 (선택)" value={g.venue} onChange={(e) => set({ game: { ...g, venue: e.target.value } })} />
-              <select className="full" value={g.stage} onChange={(e) => set({ game: { ...g, stage: e.target.value } })}>
-                {Object.entries(STAGES).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
-              </select>
+              <StageSelect className="full" value={g.stage} onChange={(stage) => set({ game: { ...g, stage } })} />
             </div>
           ) : (
             <div className="game-card-teams">
               <TeamName team={g.home} />
               <span className="muted">vs</span>
               <TeamName team={g.away} />
-              <div className="muted small full">{STAGES[g.stage]} · {g.venue}</div>
+              <div className="muted small full">{stageLabel(g.stage)} · {g.venue}</div>
             </div>
           )}
         </section>

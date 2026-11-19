@@ -16,8 +16,12 @@ export const STAGES = {
   semi: '플레이오프 4강',
   ufinal: '플레이오프 결승',
   cup: '컵대회',
+  mbc: 'MBC배 상주대회',
   allstar: '올스타전',
 };
+
+/** 단계 이름: 목록에 없으면 직접 입력한 이름 그대로 (예: "상주스토브리그") */
+export const stageLabel = (s) => STAGES[s] || s || '';
 
 export const TEAMS = [
   // KBL

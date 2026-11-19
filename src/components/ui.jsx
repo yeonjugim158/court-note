@@ -1,7 +1,55 @@
-import { getLeague, STAGES } from '../data/teams.js';
+import { useState } from 'react';
+import { getLeague, STAGES, stageLabel } from '../data/teams.js';
 import { MODES, RESULT_LABEL, resultOf, hasScore } from '../lib/entry.js';
 import { fmtDate } from '../lib/date.js';
 import { useCoverThumb, useObjectUrl } from '../lib/hooks.js';
+
+/**
+ * 경기 단계 고르기: 목록(정규리그·플레이오프·MBC배 상주대회 …) + 직접 입력
+ * 직접 입력한 이름은 그대로 저장돼요 (stageLabel이 그대로 보여 줌)
+ */
+export function StageSelect({ value, onChange, className = '' }) {
+  const [typingState, setTyping] = useState(false);
+  // 값이 목록에 없는 이름이면(바깥에서 한 번에 바꾼 경우 포함) 직접 입력 칸으로
+  const typing = typingState || (!!value && !(value in STAGES));
+  if (typing) {
+    return (
+      <div className={'stage-custom ' + className}>
+        <input
+          autoFocus={!value}
+          value={value}
+          placeholder="대회·경기 이름 (예: 상주스토브리그)"
+          onChange={(e) => onChange(e.target.value)}
+        />
+        <button
+          type="button"
+          className="link-btn"
+          onClick={() => {
+            setTyping(false);
+            onChange('regular');
+          }}
+        >
+          목록
+        </button>
+      </div>
+    );
+  }
+  return (
+    <select
+      className={className}
+      value={value in STAGES ? value : 'regular'}
+      onChange={(e) => {
+        if (e.target.value === '__custom') {
+          setTyping(true);
+          onChange('');
+        } else onChange(e.target.value);
+      }}
+    >
+      {Object.entries(STAGES).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
+      <option value="__custom">직접 입력…</option>
+    </select>
+  );
+}
 
 export function LayerHead({ title, onBack, backLabel = '‹', right }) {
   return (
@@ -56,7 +104,7 @@ export function EntryCard({ entry, onClick, showDate }) {
           <span className="score">{hasScore(entry) ? `${entry.score.home} : ${entry.score.away}` : 'vs'}</span>
           <TeamName team={g.away} strong={entry.cheer === 'away'} />
         </div>
-        <p className="entry-snippet">{entry.diary || (g.stage ? STAGES[g.stage] : '') + (g.venue ? ` · ${g.venue}` : '')}</p>
+        <p className="entry-snippet">{entry.diary || stageLabel(g.stage) + (g.venue ? ` · ${g.venue}` : '')}</p>
       </div>
     </button>
   );

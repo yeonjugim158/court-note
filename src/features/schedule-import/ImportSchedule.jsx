@@ -1,9 +1,9 @@
 // 📷 일정 사진 → 경기 후보 확인 → "내 일정"에 추가
 // 이 화면을 열 때만 불러옴 (App.jsx에서 lazy) → 글자 인식 엔진이 앱 첫 화면을 무겁게 하지 않음
 import { useEffect, useRef, useState } from 'react';
-import { LEAGUES, STAGES, teamsOf, getTeam } from '../../data/teams.js';
+import { LEAGUES, teamsOf, getTeam } from '../../data/teams.js';
 import { fmtDate } from '../../lib/date.js';
-import { LayerHead } from '../../components/ui.jsx';
+import { LayerHead, StageSelect } from '../../components/ui.jsx';
 import { hasMissingTeams, mergeCandidates, parseSchedule, referenceDate } from './parse.js';
 import { groupRows, parseTable, rowsToText } from './layout.js';
 import { addMyGames, inOfficial } from './myGames.js';
@@ -51,9 +51,7 @@ function Candidate({ c, onChange, onRemove }) {
       <div className="imp-row">
         <input type="date" value={c.date} onChange={(e) => set({ date: e.target.value })} />
         <input type="time" value={c.time} onChange={(e) => set({ time: e.target.value })} />
-        <select value={c.stage} onChange={(e) => set({ stage: e.target.value })}>
-          {Object.entries(STAGES).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
-        </select>
+        <StageSelect className="imp-stage" value={c.stage} onChange={(stage) => set({ stage })} />
       </div>
       <input className="imp-venue" value={c.venue} placeholder="경기장" onChange={(e) => set({ venue: e.target.value })} />
       {c.line && <p className="imp-src muted small">인식: “{c.line}”</p>}
@@ -185,6 +183,18 @@ export default function ImportSchedule({ date, onClose }) {
                     ));
                   })()}
                 </div>
+              </div>
+            )}
+            {list.length > 1 && (
+              // 대회 일정표는 경기가 많아서 단계(예: MBC배 상주대회, 직접 입력)를 한 번에
+              <div className="imp-year">
+                <span className="muted small">단계 모두</span>
+                <StageSelect
+                  key={list.length}
+                  className="imp-all-stage"
+                  value={list[0].stage}
+                  onChange={(stage) => setList((l) => l.map((c) => ({ ...c, stage })))}
+                />
               </div>
             )}
             <div className="imp-list">
