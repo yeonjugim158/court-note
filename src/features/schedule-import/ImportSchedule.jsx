@@ -5,6 +5,7 @@ import { LEAGUES, STAGES, teamsOf, getTeam } from '../../data/teams.js';
 import { fmtDate } from '../../lib/date.js';
 import { LayerHead } from '../../components/ui.jsx';
 import { hasMissingTeams, mergeCandidates, parseSchedule } from './parse.js';
+import { groupRows, parseTable, rowsToText } from './layout.js';
 import { addMyGames, inOfficial } from './myGames.js';
 
 const blank = (date) => ({ key: `n${Date.now()}`, date: date || '', time: '', homeId: '', awayId: '', leagueId: 'kbl', venue: '', stage: 'regular', on: true });
@@ -73,10 +74,9 @@ export default function ImportSchedule({ date, onClose }) {
   useEffect(() => () => imgUrl && URL.revokeObjectURL(imgUrl), [imgUrl]);
 
   const [latinText, setLatinText] = useState('');
-  const reparse = (t, latin = latinText) => {
-    const found = mergeCandidates(parseSchedule(t), latin ? parseSchedule(latin) : []);
-    setList(found.map((c) => ({ ...c, on: !inOfficial(c) })));
-  };
+  const show = (found) => setList(found.map((c) => ({ ...c, on: !inOfficial(c) })));
+  // 글자만 고쳐서 다시 찾을 때 (표 위치 정보 없이 줄 단위로)
+  const reparse = (t, latin = latinText) => show(mergeCandidates(parseSchedule(t), latin ? parseSchedule(latin) : []));
 
   const onFile = async (e) => {
     const file = e.target.files?.[0];
@@ -87,12 +87,16 @@ export default function ImportSchedule({ date, onClose }) {
     setStep('reading');
     try {
       const { recognize, recognizeLatin } = await import('./ocr.js');
-      const t = await recognize(file, setProgress);
+      const rows = groupRows(await recognize(file, setProgress));
+      const t = rowsToText(rows);
       // 영문 팀 약칭(SK·KT…)이 깨진 줄이 있으면 영어 전용으로 한 번 더
-      const latin = hasMissingTeams(t) ? await recognizeLatin(setProgress).catch(() => '') : '';
+      const latinRows = hasMissingTeams(t) ? groupRows(await recognizeLatin(setProgress).catch(() => [])) : [];
+      const latin = rowsToText(latinRows);
       setText(t);
       setLatinText(latin);
-      reparse(t, latin);
+      // 표 형식(시간 머리줄 + 날짜 행)이면 칸 위치로, 아니면 줄 단위로
+      const table = mergeCandidates(parseTable(rows), parseTable(latinRows));
+      show(table.length ? table : mergeCandidates(parseSchedule(t), latin ? parseSchedule(latin) : []));
       setStep('review');
     } catch (err) {
       setError('글자를 읽지 못했어요. 인터넷 연결을 확인하고 다시 시도해 주세요.\n(' + err.message + ')');
@@ -141,7 +145,7 @@ export default function ImportSchedule({ date, onClose }) {
         {step === 'reading' && (
           <div className="imp-reading">
             {imgUrl && <img src={imgUrl} alt="" className="imp-preview" />}
-            <p><b>{progress.stage === 'load' ? '글자 인식 준비 중…' : progress.stage === 'latin' ? '영문 팀 이름 다시 읽는 중…' : '글자 읽는 중…'}</b></p>
+            <p><b>{progress.stage === 'load' ? '글자 인식 준비 중…' : progress.stage === 'latin' ? '영문 팀 이름 다시 읽는 중…' : progress.stage === 'read2' ? '글자 크기를 맞춰 다시 읽는 중…' : '글자 읽는 중…'}</b></p>
             <div className="imp-bar"><i style={{ width: `${Math.round((progress.ratio || 0) * 100)}%` }} /></div>
             <p className="muted small">{progress.stage === 'load' ? '처음 한 번은 데이터를 받느라 30초~1분 걸릴 수 있어요.' : '사진 크기에 따라 10~30초 걸려요.'}</p>
           </div>

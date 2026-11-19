@@ -40,9 +40,10 @@ const ALIASES = TEAMS.flatMap((t) =>
 const isLatin = (c) => /[A-Z]/.test(c || '');
 
 /** 한 줄에서 팀 찾기 → [{ id, pos }] (등장 순서) */
-export function findTeams(line) {
+export function findTeams(line, { strictSuffix = false } = {}) {
   // 띄어쓰기는 지우되, 영문끼리 사이의 공백은 '|'로 남겨 "SK vs KT"가 "SKVSKT"로 붙지 않게
   const s = line
+    .replace(/v\s*s\.?/gi, ' ') // "SKvs KT" → "SK  KT"
     .toUpperCase()
     .replace(/\s+/g, (m, i, str) => (/[A-Z]/.test(str[i - 1] || '') && /[A-Z]/.test(str[i + m.length] || '') ? '|' : ''));
   const taken = new Array(s.length).fill(false);
@@ -57,6 +58,8 @@ export function findTeams(line) {
       if (taken.slice(i, end).some(Boolean)) continue;
       // 영문 약칭(SK, LG, KT, DB…)은 다른 영문자에 붙어 있으면 무시 (예: SKY, KTX)
       if (/^[A-Z]+$/.test(alias) && (isLatin(s[i - 1]) || isLatin(s[end]))) continue;
+      // 단어 하나만 볼 때: "동국대wise"·"동국대\156"(분교 표기 인식 결과)는 다른 팀
+      if (strictSuffix && /[A-Z\\0-9]/.test(s[end] || '')) continue;
       taken.fill(true, i, end);
       found.push({ id, pos: i });
     }
@@ -126,7 +129,11 @@ function findVenue(line) {
   while (words.length > 1 && (filler(words[0]) || (!/대학교$/.test(words[0]) && findTeams(words[0]).length)) && words.slice(1).join('').length >= 4) {
     words = words.slice(1);
   }
-  return words.join(' ');
+  v = words.join(' ');
+  // 띄어쓰기 없이 붙은 팀 이름 떼기: "연세대화정체육관" → "화정체육관" (단, "중앙대학교"는 그대로)
+  const head = ALIASES.find(({ alias }) => /[가-힣]/.test(alias) && v.toUpperCase().startsWith(alias) && v[alias.length] !== ' ' && !v.startsWith('학교', alias.length));
+  if (head && v.length - head.alias.length >= 4) v = v.slice(head.alias.length);
+  return v;
 }
 
 function stageOf(text) {
