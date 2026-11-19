@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import { LEAGUES, STAGES, teamsOf, getTeam } from '../../data/teams.js';
 import { fmtDate } from '../../lib/date.js';
 import { LayerHead } from '../../components/ui.jsx';
-import { hasMissingTeams, mergeCandidates, parseSchedule } from './parse.js';
+import { hasMissingTeams, mergeCandidates, parseSchedule, referenceDate } from './parse.js';
 import { groupRows, parseTable, rowsToText } from './layout.js';
 import { addMyGames, inOfficial } from './myGames.js';
 
@@ -76,7 +76,10 @@ export default function ImportSchedule({ date, onClose }) {
   const [latinText, setLatinText] = useState('');
   const show = (found) => setList(found.map((c) => ({ ...c, on: !inOfficial(c) })));
   // 글자만 고쳐서 다시 찾을 때 (표 위치 정보 없이 줄 단위로)
-  const reparse = (t, latin = latinText) => show(mergeCandidates(parseSchedule(t), latin ? parseSchedule(latin) : []));
+  const reparse = (t, latin = latinText) => {
+    const ref = referenceDate(t);
+    show(mergeCandidates(parseSchedule(t, ref), latin ? parseSchedule(latin, ref) : []));
+  };
 
   const onFile = async (e) => {
     const file = e.target.files?.[0];
@@ -95,8 +98,9 @@ export default function ImportSchedule({ date, onClose }) {
       setText(t);
       setLatinText(latin);
       // 표 형식(시간 머리줄 + 날짜 행)이면 칸 위치로, 아니면 줄 단위로
-      const table = mergeCandidates(parseTable(rows), parseTable(latinRows));
-      show(table.length ? table : mergeCandidates(parseSchedule(t), latin ? parseSchedule(latin) : []));
+      const ref = referenceDate(`${t}\n${latin}`); // 사진에 적힌 연도 기준
+      const table = mergeCandidates(parseTable(rows, ref), parseTable(latinRows, ref));
+      show(table.length ? table : mergeCandidates(parseSchedule(t, ref), latin ? parseSchedule(latin, ref) : []));
       setStep('review');
     } catch (err) {
       setError('글자를 읽지 못했어요. 인터넷 연결을 확인하고 다시 시도해 주세요.\n(' + err.message + ')');
@@ -162,6 +166,27 @@ export default function ImportSchedule({ date, onClose }) {
             <p className="step-sub">
               {list.length ? `경기 ${list.length}개를 찾았어요. 틀린 곳을 고치고 추가할 경기만 체크하세요.` : '경기를 찾지 못했어요. 아래 "인식한 글자"를 고치거나 직접 추가해 주세요.'}
             </p>
+            {list.some((c) => c.date) && (
+              // 사진에 연도가 없거나 못 읽으면 연도를 짐작함 → 한 번에 바꾸기
+              <div className="imp-year">
+                <span className="muted small">연도</span>
+                <div className="seg sm">
+                  {(() => {
+                    const y = new Date().getFullYear();
+                    const cur = Number(list.find((c) => c.date)?.date.slice(0, 4));
+                    return [y - 1, y, y + 1].map((yy) => (
+                      <button
+                        key={yy}
+                        className={cur === yy ? 'on' : ''}
+                        onClick={() => setList((l) => l.map((c) => (c.date ? { ...c, date: `${yy}${c.date.slice(4)}` } : c)))}
+                      >
+                        {yy}
+                      </button>
+                    ));
+                  })()}
+                </div>
+              </div>
+            )}
             <div className="imp-list">
               {list.map((c) => (
                 <Candidate

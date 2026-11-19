@@ -236,3 +236,13 @@ export function mergeCandidates(a, b) {
     .sort((x, y) => `${x.date || '9'}${x.time}`.localeCompare(`${y.date || '9'}${y.time}`))
     .map((g, i) => ({ ...g, key: `c${i}` }));
 }
+
+/**
+ * 연도 없는 날짜("2월 3일")의 기준일: 사진에 연도(예: 2025)가 적혀 있으면 그 해 7월 1일, 없으면 오늘
+ * (그 해 안의 날짜로 맞춰짐 · 오늘 기준이면 앞뒤 6개월 안으로)
+ */
+export function referenceDate(text, today = new Date()) {
+  const m = text.match(/(?<![\d.:])(20\d{2})(?![\d:])/);
+  const y = m && Number(m[1]);
+  return y && Math.abs(y - today.getFullYear()) <= 2 ? new Date(y, 6, 1, 12) : today;
+}

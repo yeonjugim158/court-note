@@ -465,3 +465,4 @@ h1, h2, h3, h4, p { margin: 0; }
 .imp-card select, .imp-card input:not([type=checkbox]) { min-width: 0; width: 100%; font-size: 14px; padding: 8px; }
 .imp-src { margin: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .imp-actions { position: sticky; bottom: 0; display: grid; grid-template-columns: auto 1fr; gap: 8px; padding: 12px 0 calc(12px + env(safe-area-inset-bottom)); background: var(--bg); margin-top: 12px; }
+.imp-year { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }

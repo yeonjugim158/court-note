@@ -39,6 +39,31 @@ function rowString(row) {
 }
 
 // 글자별로 떨어져 읽힌 한글 붙이기 ("화 정 체육관" → "화정체육관")
+/** 글자 하나씩 떨어져 읽힌 한글 조각 붙이기: "성" "균" "관대" → "성균관대" (간격이 글자 높이의 절반보다 좁을 때) */
+function joinHangulPieces(words) {
+  const out = [];
+  for (const w of words) {
+    const prev = out[out.length - 1];
+    const h = Math.max(w.y1 - w.y0, 8);
+    if (prev && /[가-힣]$/.test(prev.t) && /^[가-힣]/.test(w.t) && w.x0 - prev.x1 < h * 0.5) {
+      out[out.length - 1] = { ...prev, t: prev.t + w.t, x1: Math.max(prev.x1, w.x1), xc: (prev.x0 + Math.max(prev.x1, w.x1)) / 2 };
+    } else out.push(w);
+  }
+  return out;
+}
+
+/** 깨진 경기장 이름(한글이 적음)은 다른 온전한 이름을 빌려 씀: "AFX oTra 관 (신관)" + "상주실내체육관 (구관)" → "상주실내체육관 (신관)" */
+function fixVenues(venues) {
+  const ok = (n) => (n.match(/[가-힣]/g) || []).length >= n.replace(/[\s()]/g, '').length * 0.7;
+  const good = venues.find((v) => ok(v.name));
+  for (const v of venues) {
+    if (ok(v.name)) continue;
+    if (!good) { v.name = ''; continue; }
+    const paren = v.name.match(/\([가-힣]+\)\s*$/)?.[0];
+    v.name = good.name.replace(/\s*\([^)]*\)\s*$/, '') + (paren ? ` ${paren}` : '');
+  }
+}
+
 export const rowsToText = (rows) => rows.map((r) => rowString(r).s.replace(/(?<=[가-힣]) (?=[가-힣])/g, '')).join('\n');
 
 /** "6일(월)"처럼 월이 깨진 날짜: 일만 찾고 월은 앞 날짜에서 */
@@ -50,7 +75,12 @@ const DAY_ONLY = /(?<![\d.])(\d{1,2})\s*일\s*\(?\s*[월화수목금토일]/g;
  */
 export function parseTable(rows, today = new Date()) {
   let anchors = null; // 현재 시간 열 [{ x, time }]
+  // 첫 줄 날짜의 월이 깨졌을 때("2% 3일") 쓸 기준: 표 안에서 처음 나오는 온전한 날짜
   let lastDate = null;
+  for (const r of rows) {
+    const d = findDates(rowString(r).s, today)[0];
+    if (d) { lastDate = d.date; break; }
+  }
   const venues = []; // [{ x, y, name }]  "장 소 : 상주실내체육관 (신관)"
   const out = [];
   const allText = rowsToText(rows);
@@ -72,6 +102,7 @@ export function parseTable(rows, today = new Date()) {
     // 시간 머리줄
     const times = findTimes(s);
     if (times.length >= 2) {
+      fixVenues(venues);
       anchors = times.map((t) => ({ x: at[t.pos]?.xc ?? 0, time: t.time }));
       continue;
     }
@@ -92,8 +123,13 @@ export function parseTable(rows, today = new Date()) {
     if (!anchors) continue;
 
     // 칸 안의 팀 (단어 하나씩: "동국대wise"·"동국대\156" 같은 분교 표기는 다른 팀으로 봄)
-    const teams = row.words
-      .flatMap((w) => findTeams(w.t, { strictSuffix: true }).map((t) => ({ id: t.id, x: w.xc })))
+    const teams = joinHangulPieces(row.words)
+      .flatMap((w) => {
+        const found = findTeams(w.t, { strictSuffix: true });
+        const len = w.t.replace(/\s+/g, '').length || 1;
+        // 한 단어에 팀이 여럿 붙어 읽힌 경우("명지대건국대") 글자 위치로 x를 나눔
+        return found.map((t) => ({ id: t.id, x: found.length > 1 ? w.x0 + ((t.pos + 1.5) / len) * (w.x1 - w.x0) : w.xc }));
+      })
       .sort((a, b) => a.x - b.x);
     const colOf = (x) => anchors.reduce((best, a) => (Math.abs(a.x - x) < Math.abs(best.x - x) ? a : best), anchors[0]);
 
