@@ -3,7 +3,7 @@ import { db, deleteEntry } from '../lib/db.js';
 import { fmtDateFull } from '../lib/date.js';
 import { MODES, MOODS, resultOf, hasScore } from '../lib/entry.js';
 import { useObjectUrl } from '../lib/hooks.js';
-import { STAGES } from '../data/teams.js';
+import { stageLabel } from '../data/teams.js';
 import { LayerHead, LeagueBadge, ResultChip, TeamName } from './ui.jsx';
 import GameLinks from './GameLinks.jsx';
 
@@ -59,7 +59,7 @@ export default function EntryDetail({ entryId, nav }) {
           <div className="sb-meta">
             <span className="mode-tag">{MODES[entry.mode].icon} {MODES[entry.mode].label}</span>
             <LeagueBadge leagueId={g.leagueId} />
-            <span className="muted">{STAGES[g.stage]}</span>
+            <span className="muted">{stageLabel(g.stage)}</span>
             <ResultChip r={r} />
           </div>
           <div className="sb-main">

@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { lazy, Suspense, useEffect, useRef, useState } from 'react';
 import { useFavTeams, usePrefs } from './lib/hooks.js';
 import { getTeam } from './data/teams.js';
 import { fillFinishedScores } from './lib/sync.js';
@@ -10,6 +10,9 @@ import SettingsView from './components/SettingsView.jsx';
 import EntryForm from './components/EntryForm.jsx';
 import EntryDetail from './components/EntryDetail.jsx';
 import ErrorBoundary from './components/ErrorBoundary.jsx';
+
+// 일정 사진 가져오기: 글자 인식 엔진이 커서 버튼을 눌렀을 때만 불러옴
+const ImportSchedule = lazy(() => import('./features/schedule-import/ImportSchedule.jsx'));
 
 const TABS = [
   { id: 'calendar', label: '달력', icon: '🗓️' },
@@ -51,7 +54,8 @@ export default function App() {
   const back = () => setStack((s) => s.slice(0, -1));
 
   const nav = {
-    newEntry: (date, gameId) => push({ type: 'form', date, gameId }),
+    newEntry: (date, gameId, game) => push({ type: 'form', date, gameId, game }),
+    importSchedule: (date) => push({ type: 'import', date }),
     editEntry: (entryId) => push({ type: 'form', entryId }),
     openEntry: (entryId) => push({ type: 'detail', entryId }),
     back,
@@ -81,8 +85,13 @@ export default function App() {
       {stack.map((v) => (
         <div className="layer" key={v.key}>
           <ErrorBoundary>
-            {v.type === 'form' && <EntryForm date={v.date} entryId={v.entryId} gameId={v.gameId} onClose={back} />}
+            {v.type === 'form' && <EntryForm date={v.date} entryId={v.entryId} gameId={v.gameId} presetGame={v.game} onClose={back} />}
             {v.type === 'detail' && <EntryDetail entryId={v.entryId} nav={nav} />}
+            {v.type === 'import' && (
+              <Suspense fallback={<p className="muted center pad">불러오는 중…</p>}>
+                <ImportSchedule date={v.date} onClose={back} />
+              </Suspense>
+            )}
           </ErrorBoundary>
         </div>
       ))}

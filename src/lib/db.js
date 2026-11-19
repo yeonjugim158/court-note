@@ -7,6 +7,10 @@ db.version(1).stores({
   photos: 'id, entryId',
   settings: 'key',
 });
+// v2: 사진으로 가져온 "내 일정" (src/features/schedule-import)
+db.version(2).stores({
+  myGames: 'id, date',
+});
 
 // http(LAN) 접속에서는 crypto.randomUUID가 없으므로 대체 구현 사용
 export const uid = () =>
