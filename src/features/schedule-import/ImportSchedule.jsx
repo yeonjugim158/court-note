@@ -54,7 +54,6 @@ function Candidate({ c, onChange, onRemove }) {
         <StageSelect className="imp-stage" value={c.stage} onChange={(stage) => set({ stage })} />
       </div>
       <input className="imp-venue" value={c.venue} placeholder="경기장" onChange={(e) => set({ venue: e.target.value })} />
-      {c.line && <p className="imp-src muted small">인식: “{c.line}”</p>}
     </div>
   );
 }
