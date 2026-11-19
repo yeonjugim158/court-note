@@ -9,6 +9,7 @@ import { LEAGUES, STAGES, getTeam } from '../data/teams.js';
 import { getGames, isFinished } from '../data/games.js';
 import { EntryCard, LeagueBadge, TeamName } from './ui.jsx';
 import { ChannelChips } from './GameLinks.jsx';
+import { deleteMyGame, useMyGamesOn } from '../features/schedule-import/myGames.js';
 
 function GameRow({ g, recorded, starred, upcoming, isFavTeam, nav }) {
   const h = getTeam(g.homeId), a = getTeam(g.awayId);
@@ -18,7 +19,7 @@ function GameRow({ g, recorded, starred, upcoming, isFavTeam, nav }) {
       <div className="day-game-row">
         <button
           className="day-game-main"
-          onClick={() => (recorded ? nav.openEntry(recorded.id) : nav.newEntry(g.date, g.id))}
+          onClick={() => (recorded ? nav.openEntry(recorded.id) : nav.newEntry(g.date, g.id, g.mine ? g : undefined))}
         >
           <div className="game-top">
             <b>{g.time || '시간 미정'}</b>
@@ -32,7 +33,23 @@ function GameRow({ g, recorded, starred, upcoming, isFavTeam, nav }) {
           </div>
           <span className="day-game-foot">
             <span className={'day-game-cta' + (recorded ? ' done' : '')}>{recorded ? '✓ 기록함 · 보기' : '기록하기 ›'}</span>
-            <ChannelChips gameId={g.id} finished={done} />
+            {g.mine ? (
+              <span className="ch-chips">
+                <span className="ch-chip mine">내 일정</span>
+                <span
+                  role="button"
+                  className="ch-chip"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    if (confirm('이 경기를 내 일정에서 지울까요?\n(이미 남긴 기록은 지워지지 않아요)')) deleteMyGame(g.id);
+                  }}
+                >
+                  삭제
+                </span>
+              </span>
+            ) : (
+              <ChannelChips gameId={g.id} finished={done} />
+            )}
           </span>
         </button>
         {upcoming && (
@@ -53,12 +70,13 @@ function GameRow({ g, recorded, starred, upcoming, isFavTeam, nav }) {
 export default function DayPanel({ date, nav }) {
   const entries = useLiveQuery(() => db.entries.where('date').equals(date).toArray(), [date], []);
   const favGames = useFavGames();
+  const myGames = useMyGamesOn(date);
   const fav = useFavTeams();
   const upcoming = date >= todayYmd();
 
   const sections = LEAGUES.map((l) => {
     const favId = fav[l.id];
-    const games = [...getGames(l.id, date)].sort((x, y) => {
+    const games = [...getGames(l.id, date), ...myGames.filter((g) => g.leagueId === l.id)].sort((x, y) => {
       const fx = x.homeId === favId || x.awayId === favId ? 0 : 1;
       const fy = y.homeId === favId || y.awayId === favId ? 0 : 1;
       return fx - fy || (x.time || '').localeCompare(y.time || '');
@@ -70,7 +88,10 @@ export default function DayPanel({ date, nav }) {
     <section className="day-panel" aria-label={`${date} 일정`}>
       <div className="day-panel-head">
         <h2>{fmtDateFull(date)}</h2>
-        <button className="btn ghost sm" onClick={() => nav.newEntry(date)}>＋ 기록</button>
+        <span className="day-panel-btns">
+          <button className="btn ghost sm" onClick={() => nav.importSchedule(date)}>📷 일정</button>
+          <button className="btn ghost sm" onClick={() => nav.newEntry(date)}>＋ 기록</button>
+        </span>
       </div>
 
       {entries.length > 0 && (
@@ -107,7 +128,9 @@ export default function DayPanel({ date, nav }) {
         <p className="muted center day-empty">
           이 날은 등록된 경기가 없어요.
           <br />
-          연습경기·D리그 등은 <b>＋ 기록</b>에서 직접 입력할 수 있어요.
+          연습경기·D리그 등은 <b>📷 일정</b>으로 일정 사진을 가져오거나
+          <br />
+          <b>＋ 기록</b>에서 직접 입력할 수 있어요.
         </p>
       )}
     </section>

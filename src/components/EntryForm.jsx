@@ -14,10 +14,10 @@ const MAX_PHOTOS = 10;
 
 const blankSide = () => ({ id: null, name: '', short: '', color: null });
 
-export default function EntryForm({ date: initDate, entryId, gameId, onClose }) {
+export default function EntryForm({ date: initDate, entryId, gameId, presetGame, onClose }) {
   const editing = !!entryId;
   // 달력 일정에서 경기를 눌러 들어온 경우: 직관/집관만 고르면 바로 기록 화면
-  const preset = !editing && gameId ? getGame(gameId) : null;
+  const preset = editing ? null : presetGame || (gameId ? getGame(gameId) : null); // presetGame: 사진으로 가져온 내 일정
   const fav = useFavTeams();
   const [step, setStep] = useState(editing ? 'loading' : 'mode');
   const [f, setF] = useState(() => ({

@@ -16,16 +16,17 @@ const blobToDataURL = (blob) =>
 const dataURLToBlob = (url) => fetch(url).then((r) => r.blob());
 
 export async function exportBackup() {
-  const [entries, photos, settings] = await Promise.all([
+  const [entries, photos, settings, myGames] = await Promise.all([
     db.entries.toArray(),
     db.photos.toArray(),
     db.settings.toArray(),
+    db.myGames.toArray(),
   ]);
   const photosOut = [];
   for (const p of photos) {
     photosOut.push({ ...p, blob: await blobToDataURL(p.blob), thumb: await blobToDataURL(p.thumb) });
   }
-  const json = JSON.stringify({ app: 'court-note', version: 1, exportedAt: new Date().toISOString(), entries, photos: photosOut, settings });
+  const json = JSON.stringify({ app: 'court-note', version: 1, exportedAt: new Date().toISOString(), entries, photos: photosOut, settings, myGames });
   const name = `court-note-backup-${ymd(new Date()).replaceAll('-', '')}.json`;
   const file = new File([json], name, { type: 'application/json' });
 
@@ -60,8 +61,9 @@ export async function importBackup(file) {
   for (const p of data.photos || []) {
     photos.push({ ...p, blob: await dataURLToBlob(p.blob), thumb: await dataURLToBlob(p.thumb) });
   }
-  await db.transaction('rw', db.entries, db.photos, db.settings, async () => {
-    await Promise.all([db.entries.clear(), db.photos.clear(), db.settings.clear()]);
+  await db.transaction('rw', db.entries, db.photos, db.settings, db.myGames, async () => {
+    await Promise.all([db.entries.clear(), db.photos.clear(), db.settings.clear(), db.myGames.clear()]);
+    await db.myGames.bulkAdd(data.myGames || []); // 예전 백업엔 없음
     await db.entries.bulkAdd(data.entries);
     await db.photos.bulkAdd(photos);
     await db.settings.bulkAdd(data.settings || []);

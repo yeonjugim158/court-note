@@ -8,6 +8,7 @@ import { useCoverThumb, useFavGames, useFavTeams, useObjectUrl, useSetting } fro
 import { getLeague, getTeam } from '../data/teams.js';
 import { getGames } from '../data/games.js';
 import DayPanel from './DayPanel.jsx';
+import { useMyGamesBetween } from '../features/schedule-import/myGames.js';
 
 function Cell({ day, ds, entries, isToday, selected, mark, onClick }) {
   const cover = entries.find((e) => e.coverPhotoId) || entries[0];
@@ -95,6 +96,7 @@ export default function CalendarView({ nav, weekStart = 0, goSettings }) {
   const weekOrder = [0, 1, 2, 3, 4, 5, 6].map((i) => (i + weekStart) % 7);
 
   const entries = useLiveQuery(() => db.entries.where('date').between(start, end, true, true).toArray(), [start, end], []);
+  const myGames = useMyGamesBetween(start, end);
 
   const byDate = useMemo(() => {
     const map = {};
@@ -120,10 +122,11 @@ export default function CalendarView({ nav, weekStart = 0, goSettings }) {
 
   // 응원팀 경기(점) · 즐겨찾기 경기(★) 표시
   const markOf = (ds) => {
-    const games = [...getGames('kbl', ds), ...getGames('uleague', ds)];
+    const games = [...getGames('kbl', ds), ...getGames('uleague', ds), ...myGames.filter((g) => g.date === ds)];
     if (games.some((g) => favGames.includes(g.id))) return { star: true };
     const g = games.find((g) => [g.homeId, g.awayId].includes(fav[g.leagueId]));
-    return g ? { color: getTeam(fav[g.leagueId]).color } : null;
+    if (g) return { color: getTeam(fav[g.leagueId]).color };
+    return games.some((x) => x.mine) ? { color: 'var(--muted)' } : null; // 내 일정(사진으로 가져온 경기)
   };
   const cells = [];
   for (let i = 0; i < offset; i++) cells.push(<div key={'b' + i} className="cal-blank" />);
