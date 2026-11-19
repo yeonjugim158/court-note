@@ -16,7 +16,7 @@ export const STAGES = {
   semi: '플레이오프 4강',
   ufinal: '플레이오프 결승',
   cup: '컵대회',
-  mbc: 'MBC배 상주대회',
+  mbc: 'MBC배 전국대학농구 상주대회',
   allstar: '올스타전',
 };
 

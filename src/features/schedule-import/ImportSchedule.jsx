@@ -186,7 +186,7 @@ export default function ImportSchedule({ date, onClose }) {
               </div>
             )}
             {list.length > 1 && (
-              // 대회 일정표는 경기가 많아서 단계(예: MBC배 상주대회, 직접 입력)를 한 번에
+              // 대회 일정표는 경기가 많아서 단계(예: MBC배 전국대학농구 상주대회, 직접 입력)를 한 번에
               <div className="imp-year">
                 <span className="muted small">단계 모두</span>
                 <StageSelect

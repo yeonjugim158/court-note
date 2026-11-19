@@ -5,7 +5,7 @@ import { fmtDate } from '../lib/date.js';
 import { useCoverThumb, useObjectUrl } from '../lib/hooks.js';
 
 /**
- * 경기 단계 고르기: 목록(정규리그·플레이오프·MBC배 상주대회 …) + 직접 입력
+ * 경기 단계 고르기: 목록(정규리그·플레이오프·MBC배 전국대학농구 상주대회 …) + 직접 입력
  * 직접 입력한 이름은 그대로 저장돼요 (stageLabel이 그대로 보여 줌)
  */
 export function StageSelect({ value, onChange, className = '' }) {
