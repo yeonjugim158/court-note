@@ -84,11 +84,14 @@ input[type='date'], input[type='time'] {
   display: block;
   min-width: 0;
   max-width: 100%;
-  min-height: 44px;
-  line-height: 1.2;
+  /* 세로 가운데: 높이를 고정하고 줄 높이를 칸 안쪽 높이(44 - 테두리 2)와 같게 → 아이폰이 글자를 위로 붙이지 않음 */
+  height: 44px;
+  padding-top: 0;
+  padding-bottom: 0;
+  line-height: 42px;
   color: var(--text);
 }
-input[type='date']::-webkit-date-and-time-value, input[type='time']::-webkit-date-and-time-value { text-align: left; margin: 0; }
+input[type='date']::-webkit-date-and-time-value, input[type='time']::-webkit-date-and-time-value { text-align: left; margin: 0; line-height: 42px; }
 textarea { resize: vertical; line-height: 1.6; }
 h1, h2, h3, h4, p { margin: 0; }
 
@@ -474,7 +477,7 @@ h1, h2, h3, h4, p { margin: 0; }
 .imp-swap { width: 34px; height: 34px; border-radius: 50%; background: var(--surface-2); }
 .imp-row { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 6px; }
 .imp-row select { grid-column: 1 / -1; }
-.imp-card select, .imp-card input:not([type=checkbox]) { min-width: 0; width: 100%; font-size: 16px; padding: 8px 10px; /* 16px 미만이면 아이폰이 눌렀을 때 화면을 확대함 */ }
+.imp-card select, .imp-card input:not([type=checkbox]) { min-width: 0; width: 100%; height: 44px; font-size: 16px; padding: 0 10px; /* 같은 높이 · 16px 미만이면 아이폰이 눌렀을 때 화면을 확대함 */ }
 .imp-src { margin: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .imp-actions { position: sticky; bottom: 0; display: grid; grid-template-columns: auto 1fr; gap: 8px; padding: 12px 0 calc(12px + env(safe-area-inset-bottom)); background: var(--bg); margin-top: 12px; }
 .imp-year { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
