@@ -7,7 +7,8 @@ import { MODES, MOODS, SEAT_ZONES, WATCH_VIA } from '../lib/entry.js';
 import { LEAGUES, teamsOf, getLeague, stageLabel } from '../data/teams.js';
 import { getGame, getGames, isFinished, snapshotGame, checkedAt, fmtUpdated } from '../data/games.js';
 import { getTeam } from '../data/teams.js';
-import { LayerHead, LeagueBadge, StageSelect, TeamName } from './ui.jsx';
+import { LayerHead, LeagueBadge, TeamName } from './ui.jsx';
+import { GameFields } from './GameFields.jsx';
 import MvpPicker from './MvpPicker.jsx';
 
 const MAX_PHOTOS = 10;
@@ -90,13 +91,23 @@ export default function EntryForm({ date: initDate, entryId, gameId, presetGame,
     setStep('form');
   };
 
-  const setCustomTeam = (side, value) => {
-    const t = teamsOf(f.game.leagueId).find((t) => t.short === value || t.name === value);
-    const next = { ...f.game, [side]: t ? { id: t.id, name: t.name, short: t.short, color: t.color } : { ...blankSide(), name: value, short: value } };
-    if (side === 'home' && t && !f.game.venue) next.venue = t.venue;
-    const favId = fav[f.game.leagueId];
+  // 직접 입력 경기: GameFields에서 바뀐 값 반영 (팀은 id 또는 직접 입력한 이름)
+  const sideOf = (v) => {
+    const t = getTeam(v);
+    return t ? { id: t.id, name: t.name, short: t.short, color: t.color } : { ...blankSide(), name: v, short: v };
+  };
+  const setGameFields = ({ home, away, date, ...rest }) => {
+    const g0 = f.game;
+    const next = { ...g0, ...rest };
+    if (home !== undefined) next.home = sideOf(home);
+    if (away !== undefined) next.away = sideOf(away);
+    const h = getTeam(next.home.id), a = getTeam(next.away.id);
+    if (h && (!a || a.leagueId === h.leagueId)) next.leagueId = h.leagueId;
+    // 홈팀을 고르면 경기장이 비었거나 이전 홈 경기장일 때 새 홈 경기장으로
+    if (home !== undefined && h && (!g0.venue || g0.venue === getTeam(g0.home.id)?.venue)) next.venue = h.venue;
+    const favId = fav[next.leagueId];
     const cheer = favId && next.home.id === favId ? 'home' : favId && next.away.id === favId ? 'away' : f.cheer;
-    set({ game: next, cheer });
+    set({ game: next, cheer, ...(date && { date }) });
   };
 
   const onFiles = async (e) => {
@@ -251,7 +262,6 @@ export default function EntryForm({ date: initDate, entryId, gameId, presetGame,
   // step === 'form'
   const g = f.game;
   const isLive = f.mode === 'live';
-  const teamList = teamsOf(g.leagueId);
   return (
     <>
       <LayerHead title={editing ? '기록 수정' : '기록 쓰기'} onBack={() => (editing ? onClose() : setStep(preset && f.game?.id === preset.id ? 'mode' : 'game'))} />
@@ -265,21 +275,16 @@ export default function EntryForm({ date: initDate, entryId, gameId, presetGame,
             <button className="link-btn" onClick={() => setStep('game')}>경기 변경</button>
           </div>
           {g.custom ? (
-            <div className="custom-teams">
-              <datalist id="team-dl">
-                {teamList.map((t) => <option key={t.id} value={t.short} />)}
-              </datalist>
-              <input list="team-dl" placeholder="홈팀" value={g.home.name} onChange={(e) => setCustomTeam('home', e.target.value)} />
-              <span>vs</span>
-              <input list="team-dl" placeholder="원정팀" value={g.away.name} onChange={(e) => setCustomTeam('away', e.target.value)} />
-              {/* 경기 시간 (아이폰 시간 칸은 빈 상태에서 안내 글자가 안 보여서 왼쪽에 이름을 붙임) */}
-              <label className="full inline-field">
-                <span>경기 시간</span>
-                <input type="time" value={g.time || ''} onChange={(e) => set({ game: { ...g, time: e.target.value } })} />
-              </label>
-              <input className="full" placeholder="경기장 (선택)" value={g.venue} onChange={(e) => set({ game: { ...g, venue: e.target.value } })} />
-              <StageSelect className="full" value={g.stage} onChange={(stage) => set({ game: { ...g, stage } })} />
-            </div>
+            <GameFields
+              allowCustomTeam
+              home={g.home.id || g.home.name}
+              away={g.away.id || g.away.name}
+              date={f.date}
+              time={g.time}
+              stage={g.stage}
+              venue={g.venue}
+              onChange={setGameFields}
+            />
           ) : (
             <div className="game-card-teams">
               <TeamName team={g.home} />

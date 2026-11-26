@@ -493,3 +493,11 @@ input[type='date'], input[type='time'] { padding-top: 0 !important; padding-bott
 
 /* 직접 입력 경기: "경기 시간  [ 시간 칸 ]" */
 .inline-field { display: grid; grid-template-columns: auto minmax(0, 1fr); align-items: center; gap: 12px; font-size: 15px; color: var(--muted); }
+
+/* ---------- 경기 정보 입력 묶음 (GameFields: 기록 쓰기 직접 입력 · 일정 가져오기 공통) ---------- */
+.gf { display: flex; flex-direction: column; gap: 8px; }
+.gf-teams { display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); gap: 6px; align-items: center; }
+.gf-swap { width: 34px; height: 34px; border-radius: 50%; background: var(--surface-2); }
+.gf-row { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 6px; }
+.gf select, .gf input:not([type=checkbox]) { min-width: 0; width: 100%; height: 44px; font-size: 16px; padding: 0 10px; /* 같은 높이 · 16px 미만이면 아이폰이 눌렀을 때 화면을 확대함 */ }
+.gf .stage-custom { width: 100%; }

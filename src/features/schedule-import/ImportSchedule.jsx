@@ -1,27 +1,15 @@
 // 📷 일정 사진 → 경기 후보 확인 → "내 일정"에 추가
 // 이 화면을 열 때만 불러옴 (App.jsx에서 lazy) → 글자 인식 엔진이 앱 첫 화면을 무겁게 하지 않음
 import { useEffect, useRef, useState } from 'react';
-import { LEAGUES, teamsOf, getTeam } from '../../data/teams.js';
+import { getTeam } from '../../data/teams.js';
 import { fmtDate } from '../../lib/date.js';
 import { LayerHead, StageSelect } from '../../components/ui.jsx';
+import { GameFields } from '../../components/GameFields.jsx';
 import { hasMissingTeams, mergeCandidates, parseSchedule, referenceDate } from './parse.js';
 import { groupRows, parseTable, rowsToText } from './layout.js';
 import { addMyGames, inOfficial } from './myGames.js';
 
 const blank = (date) => ({ key: `n${Date.now()}`, date: date || '', time: '', homeId: '', awayId: '', leagueId: 'kbl', venue: '', stage: 'regular', on: true });
-
-function TeamSelect({ value, onChange }) {
-  return (
-    <select value={value} onChange={(e) => onChange(e.target.value)}>
-      <option value="">팀 선택</option>
-      {LEAGUES.map((l) => (
-        <optgroup key={l.id} label={l.name}>
-          {teamsOf(l.id).map((t) => <option key={t.id} value={t.id}>{t.short}</option>)}
-        </optgroup>
-      ))}
-    </select>
-  );
-}
 
 function Candidate({ c, onChange, onRemove }) {
   const set = (patch) => {
@@ -43,17 +31,17 @@ function Candidate({ c, onChange, onRemove }) {
         {dup && <span className="imp-tag">공식 일정에 있어요</span>}
         <button className="link-btn" onClick={onRemove} aria-label="후보 삭제">✕</button>
       </div>
-      <div className="imp-teams">
-        <TeamSelect value={c.homeId} onChange={(v) => set({ homeId: v })} />
-        <button className="imp-swap" onClick={() => set({ homeId: c.awayId, awayId: c.homeId })} aria-label="홈·원정 바꾸기">⇄</button>
-        <TeamSelect value={c.awayId} onChange={(v) => set({ awayId: v })} />
-      </div>
-      <div className="imp-row">
-        <input type="date" value={c.date} onChange={(e) => set({ date: e.target.value })} />
-        <input type="time" value={c.time} onChange={(e) => set({ time: e.target.value })} />
-        <StageSelect className="imp-stage" value={c.stage} onChange={(stage) => set({ stage })} />
-      </div>
-      <input className="imp-venue" value={c.venue} placeholder="경기장" onChange={(e) => set({ venue: e.target.value })} />
+      <GameFields
+        home={c.homeId}
+        away={c.awayId}
+        date={c.date}
+        time={c.time}
+        stage={c.stage}
+        venue={c.venue}
+        onChange={({ home, away, ...rest }) =>
+          set({ ...rest, ...(home !== undefined && { homeId: home }), ...(away !== undefined && { awayId: away }) })
+        }
+      />
     </div>
   );
 }
