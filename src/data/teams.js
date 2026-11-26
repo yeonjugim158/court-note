@@ -11,6 +11,7 @@ export const LEAGUES = [
 export const STAGES = {
   preseason: '오픈매치데이',
   regular: '정규리그',
+  dleague: 'D리그',
   po: '플레이오프',
   final: '챔피언결정전',
   semi: '플레이오프 4강',

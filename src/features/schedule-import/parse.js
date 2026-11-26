@@ -141,6 +141,7 @@ function stageOf(text) {
   if (/4\s*강/.test(text)) return 'semi';
   if (/결승/.test(text)) return 'ufinal';
   if (/플레이\s*오프|PO\b/i.test(text)) return 'po';
+  if (/D\s*리그|디리그/i.test(text)) return 'dleague';
   if (/MBC|엠비씨/i.test(text)) return 'mbc';
   if (/컵\s*대회/.test(text)) return 'cup';
   if (/올스타/.test(text)) return 'allstar';

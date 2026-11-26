@@ -8,16 +8,18 @@ import { useCoverThumb, useObjectUrl } from '../lib/hooks.js';
  * 경기 단계 고르기: 목록(정규리그·플레이오프·MBC배 전국대학농구 상주대회 …) + 직접 입력
  * 직접 입력한 이름은 그대로 저장돼요 (stageLabel이 그대로 보여 줌)
  */
-export function StageSelect({ value, onChange, className = '' }) {
+export function StageSelect({ value: raw, onChange, className = '' }) {
   const [typingState, setTyping] = useState(false);
+  // 직접 입력으로 저장된 이름이 목록 이름과 같으면(예: 예전에 적은 "D리그") 목록 항목으로 보여 줌
+  const value = raw in STAGES ? raw : Object.keys(STAGES).find((k) => STAGES[k] === raw?.trim()) || raw;
   // 값이 목록에 없는 이름이면(바깥에서 한 번에 바꾼 경우 포함) 직접 입력 칸으로
   const typing = typingState || (!!value && !(value in STAGES));
   if (typing) {
     return (
       <div className={'stage-custom ' + className}>
         <input
-          autoFocus={!value}
-          value={value}
+          autoFocus={!raw}
+          value={raw || ''}
           placeholder="대회·경기 이름 (예: 상주스토브리그)"
           onChange={(e) => onChange(e.target.value)}
         />
