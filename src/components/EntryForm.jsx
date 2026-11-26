@@ -272,6 +272,11 @@ export default function EntryForm({ date: initDate, entryId, gameId, presetGame,
               <input list="team-dl" placeholder="홈팀" value={g.home.name} onChange={(e) => setCustomTeam('home', e.target.value)} />
               <span>vs</span>
               <input list="team-dl" placeholder="원정팀" value={g.away.name} onChange={(e) => setCustomTeam('away', e.target.value)} />
+              {/* 경기 시간 (아이폰 시간 칸은 빈 상태에서 안내 글자가 안 보여서 왼쪽에 이름을 붙임) */}
+              <label className="full inline-field">
+                <span>경기 시간</span>
+                <input type="time" value={g.time || ''} onChange={(e) => set({ game: { ...g, time: e.target.value } })} />
+              </label>
               <input className="full" placeholder="경기장 (선택)" value={g.venue} onChange={(e) => set({ game: { ...g, venue: e.target.value } })} />
               <StageSelect className="full" value={g.stage} onChange={(stage) => set({ game: { ...g, stage } })} />
             </div>

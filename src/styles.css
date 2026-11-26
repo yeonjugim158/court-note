@@ -487,3 +487,9 @@ h1, h2, h3, h4, p { margin: 0; }
 .imp-row .imp-stage, .imp-row .stage-custom { grid-column: 1 / -1; }
 .custom-teams .stage-custom { grid-column: 1 / -1; }
 .imp-year .imp-all-stage, .imp-year .stage-custom { width: 62%; font-size: 14px; padding: 6px 8px; }
+
+/* 날짜·시간 칸: 다른 규칙(.date-row input 등)이 위아래 여백을 줘도 글자가 세로 가운데에 오도록 (높이 44px · 줄 높이 42px와 짝) */
+input[type='date'], input[type='time'] { padding-top: 0 !important; padding-bottom: 0 !important; }
+
+/* 직접 입력 경기: "경기 시간  [ 시간 칸 ]" */
+.inline-field { display: grid; grid-template-columns: auto minmax(0, 1fr); align-items: center; gap: 12px; font-size: 15px; color: var(--muted); }
