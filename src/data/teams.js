@@ -36,6 +36,8 @@ export const TEAMS = [
   { id: 'sono', leagueId: 'kbl', name: '고양 소노 스카이거너스', short: '소노', color: '#1F3E7A', venue: '고양소노아레나' },
   { id: 'kogas', leagueId: 'kbl', name: '대구 한국가스공사 페가수스', short: '가스공사', color: '#0091D5', venue: '대구체육관' },
   { id: 'kcc', leagueId: 'kbl', name: '부산 KCC 이지스', short: 'KCC', color: '#00296B', venue: '부산사직체육관' },
+  // D리그 등에만 나오는 팀 (extra: 응원팀 목록·리그 팀 목록에는 안 나오고, 경기 입력의 팀 선택에만)
+  { id: 'sangmu', leagueId: 'kbl', name: '국군체육부대 상무', short: '상무', color: '#3A5A40', venue: '', extra: true },
   // 대학농구 U-리그 남자부
   { id: 'korea', leagueId: 'uleague', name: '고려대', short: '고려대', color: '#8B0029', venue: '고려대학교' },
   { id: 'yonsei', leagueId: 'uleague', name: '연세대', short: '연세대', color: '#003876', venue: '연세대학교' },
@@ -53,5 +55,9 @@ export const TEAMS = [
 
 const TEAM_MAP = new Map(TEAMS.map((t) => [t.id, t]));
 export const getTeam = (id) => TEAM_MAP.get(id) || null;
-export const teamsOf = (leagueId) => TEAMS.filter((t) => t.leagueId === leagueId);
+export const teamsOf = (leagueId) => TEAMS.filter((t) => t.leagueId === leagueId && !t.extra);
+/** D리그 등에만 나오는 팀 (상무) */
+export const EXTRA_TEAMS = TEAMS.filter((t) => t.extra);
+/** 팀 id면 그 팀, 목록에 없는 이름(직접 입력)이면 이름만 있는 팀 */
+export const teamOf = (x) => getTeam(x) || (x ? { id: null, name: x, short: x, color: null } : null);
 export const getLeague = (id) => LEAGUES.find((l) => l.id === id) || null;

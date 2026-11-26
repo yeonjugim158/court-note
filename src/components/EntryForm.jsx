@@ -6,7 +6,7 @@ import { useFavTeams } from '../lib/hooks.js';
 import { MODES, MOODS, SEAT_ZONES, WATCH_VIA } from '../lib/entry.js';
 import { LEAGUES, teamsOf, getLeague, stageLabel } from '../data/teams.js';
 import { getGame, getGames, isFinished, snapshotGame, checkedAt, fmtUpdated } from '../data/games.js';
-import { getTeam } from '../data/teams.js';
+import { getTeam, teamOf } from '../data/teams.js';
 import { LayerHead, LeagueBadge, TeamName } from './ui.jsx';
 import { GameFields } from './GameFields.jsx';
 import MvpPicker from './MvpPicker.jsx';
@@ -169,9 +169,9 @@ export default function EntryForm({ date: initDate, entryId, gameId, presetGame,
           {preset && (
             <div className="preset-game">
               <LeagueBadge leagueId={preset.leagueId} />
-              <TeamName team={getTeam(preset.homeId)} />
+              <TeamName team={teamOf(preset.homeId)} />
               <span className="muted">vs</span>
-              <TeamName team={getTeam(preset.awayId)} />
+              <TeamName team={teamOf(preset.awayId)} />
               <span className="muted small">{preset.time}</span>
             </div>
           )}

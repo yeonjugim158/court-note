@@ -32,6 +32,7 @@ function Candidate({ c, onChange, onRemove }) {
         <button className="link-btn" onClick={onRemove} aria-label="후보 삭제">✕</button>
       </div>
       <GameFields
+        allowCustomTeam
         home={c.homeId}
         away={c.awayId}
         date={c.date}

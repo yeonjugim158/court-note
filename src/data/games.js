@@ -3,7 +3,7 @@
 // - 대학농구: kusf.or.kr U-리그 남자부 (2025, 2026 / 정규리그·플레이오프)
 // 각 행: [날짜, 시간, 단계, 홈팀id, 원정팀id, 경기장, 홈점수, 원정점수]  (경기 전이면 점수 null)
 
-import { getTeam } from './teams.js';
+import { getTeam, teamOf } from './teams.js';
 import kblRows from './schedule/kbl.json';
 import uleagueRows from './schedule/uleague.json';
 import meta from './schedule/meta.json';
@@ -71,8 +71,8 @@ export function snapshotGame(g) {
     stage: g.stage,
     time: g.time,
     venue: g.venue,
-    home: side(getTeam(g.homeId)),
-    away: side(getTeam(g.awayId)),
+    home: side(teamOf(g.homeId)),
+    away: side(teamOf(g.awayId)),
     custom: false,
   };
 }

@@ -5,14 +5,14 @@ import { db, toggleFavGame } from '../lib/db.js';
 import { fmtDateFull, todayYmd } from '../lib/date.js';
 import { sortEntries } from '../lib/entry.js';
 import { useFavGames, useFavTeams } from '../lib/hooks.js';
-import { LEAGUES, getTeam, stageLabel } from '../data/teams.js';
+import { LEAGUES, getTeam, stageLabel, teamOf } from '../data/teams.js';
 import { getGames, isFinished } from '../data/games.js';
 import { EntryCard, LeagueBadge, TeamName } from './ui.jsx';
 import { ChannelChips } from './GameLinks.jsx';
 import { deleteMyGame, useMyGamesOn } from '../features/schedule-import/myGames.js';
 
 function GameRow({ g, recorded, starred, upcoming, isFavTeam, nav }) {
-  const h = getTeam(g.homeId), a = getTeam(g.awayId);
+  const h = teamOf(g.homeId), a = teamOf(g.awayId); // 내 일정은 직접 입력한 팀 이름일 수 있음
   const done = isFinished(g);
   return (
     <div className={'day-game' + (starred ? ' starred' : '') + (isFavTeam ? ' fav-team' : '')}>

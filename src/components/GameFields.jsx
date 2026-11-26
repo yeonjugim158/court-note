@@ -3,13 +3,13 @@
 // - VenueSelect: KBL 경기장 · U-리그 1부 대학 · 대회 경기장 + 직접 입력
 // - StageSelect(단계)는 ui.jsx
 import { useState } from 'react';
-import { LEAGUES, teamsOf, getTeam } from '../data/teams.js';
+import { EXTRA_TEAMS, LEAGUES, teamsOf, getTeam } from '../data/teams.js';
 import { KBL_VENUES } from '../data/games.js';
 import { StageSelect } from './ui.jsx';
 
 /** 경기장 목록 */
 export const VENUE_GROUPS = [
-  { label: 'KBL 경기장', venues: [...new Set([...KBL_VENUES.map((v) => v.venue), ...teamsOf('kbl').map((t) => t.venue)])] },
+  { label: 'KBL 경기장', venues: [...new Set([...KBL_VENUES.map((v) => v.venue), ...teamsOf('kbl').map((t) => t.venue)])].filter(Boolean) },
   { label: '대학농구 U-리그 1부', venues: teamsOf('uleague').map((t) => t.venue) },
   { label: '대회 경기장', venues: ['경희대 선승관', '상주실내체육관 (신관)', '상주실내체육관 (구관)'] },
 ];
@@ -79,11 +79,16 @@ export function VenueSelect({ value, onChange, className = '' }) {
  * allowCustom: "직접 입력…" 허용 (기록 쓰기). 일정 가져오기는 목록 팀만.
  */
 export function TeamSelect({ value, onChange, allowCustom = false, className = '' }) {
-  const options = LEAGUES.map((l) => (
-    <optgroup key={l.id} label={l.name}>
-      {teamsOf(l.id).map((t) => <option key={t.id} value={t.id}>{t.short}</option>)}
-    </optgroup>
-  ));
+  const options = [
+    ...LEAGUES.map((l) => (
+      <optgroup key={l.id} label={l.name}>
+        {teamsOf(l.id).map((t) => <option key={t.id} value={t.id}>{t.short}</option>)}
+      </optgroup>
+    )),
+    <optgroup key="extra" label="D리그 · 기타">
+      {EXTRA_TEAMS.map((t) => <option key={t.id} value={t.id}>{t.short}</option>)}
+    </optgroup>,
+  ];
   if (!allowCustom) {
     return (
       <select className={className} value={value || ''} onChange={(e) => onChange(e.target.value)}>
