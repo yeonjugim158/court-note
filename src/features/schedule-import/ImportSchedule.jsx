@@ -118,7 +118,7 @@ export default function ImportSchedule({ date, onClose }) {
             <button className="imp-pick" onClick={() => fileRef.current?.click()}>
               <span className="imp-pick-icon">🖼️</span>
               <b>사진 고르기</b>
-              <span className="muted small">대학농구 U-리그, D리그, 연습경기 일정 등</span>
+              <span className="muted small">대학농구 U-리그, 대학 대회, 연습경기 일정 등</span>
             </button>
             <input ref={fileRef} type="file" accept="image/*" hidden onChange={onFile} />
             {error && <p className="warn small pre">{error}</p>}

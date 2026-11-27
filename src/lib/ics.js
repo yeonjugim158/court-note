@@ -6,7 +6,7 @@
 
 const STAGE_LABEL = {
   preseason: '오픈매치데이', regular: '정규리그', po: '플레이오프', final: '챔피언결정전',
-  semi: '플레이오프 4강', ufinal: '플레이오프 결승', cup: '컵대회', allstar: '올스타전',
+  semi: '플레이오프 4강', ufinal: '플레이오프 결승', cup: '컵대회', allstar: '올스타전', dleague: 'D리그',
 };
 const LEAGUE_LABEL = { kbl: 'KBL', uleague: 'U-리그' };
 
@@ -45,9 +45,10 @@ const alarm = (trigger, text) => [
  */
 export function gameEvent(g, home, away, appUrl = '') {
   const done = g.homeScore != null && g.awayScore != null;
+  const tag = g.stage === 'dleague' ? '[D리그] ' : ''; // 1군 경기와 구분
   const title = done
-    ? `🏀 ${home.short} ${g.homeScore}:${g.awayScore} ${away.short}`
-    : `🏀 ${home.short} vs ${away.short}`;
+    ? `🏀 ${tag}${home.short} ${g.homeScore}:${g.awayScore} ${away.short}`
+    : `🏀 ${tag}${home.short} vs ${away.short}`;
   const lines = [
     'BEGIN:VEVENT',
     `UID:${g.id}@court-note`,

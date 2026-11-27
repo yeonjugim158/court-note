@@ -3,7 +3,7 @@
 //
 // kbl.or.kr 공개 페이지를 실제 브라우저(Edge/Chrome)로 열어 읽습니다. (비공개 API는 호출하지 않음)
 //
-// 1) 일정·결과 → src/data/schedule/kbl.json (+ meta.json updatedAt)
+// 1) 일정·결과(정규·플레이오프·D리그 등) → src/data/schedule/kbl.json (+ meta.json updatedAt)
 //    지난달 ~ 시즌 종료(5월)까지 월별로 읽고, 바뀐 게 있을 때만 저장
 // 2) 부가 정보 → public/data/ (앱이 실행 중에 불러옴. 실패해도 1)에는 영향 없음)
 //    - extra.json          경기별 { k: KBL 경기키, ch: 중계 채널 코드[], hl: 하이라이트 유튜브 id }
@@ -29,6 +29,7 @@ const BOX_PER_RUN = 12; // 한 번 실행에 새로 가져올 선수 기록 최�
 const TEAM_ID = {
   한국가스공사: 'kogas', DB: 'db', 소노: 'sono', KCC: 'kcc', 정관장: 'kgc',
   SK: 'sk', 현대모비스: 'mobis', 삼성: 'samsung', KT: 'kt', LG: 'lg',
+  상무: 'sangmu', // D리그
 };
 /** 선수 목록의 지역명 포함 팀 이름 → id */
 const TEAM_BY_FULL = {
@@ -119,10 +120,13 @@ async function goToMonth(page, target) {
   throw new Error(`월 이동 실패: ${target}`);
 }
 
+/** 일정 라벨 → 단계 ("D리그 1차"·"D리그 2차" … 는 모두 D리그) */
+const stageOf = (label = '') => STAGE[label] || (/^D\s*리그/.test(label) ? 'dleague' : null);
+
 function toRow(g) {
-  const stage = STAGE[g.label];
+  const stage = stageOf(g.label);
   const h = TEAM_ID[g.home?.name], a = TEAM_ID[g.away?.name];
-  if (!stage || !h || !a) return null; // D리그·EASL·올스타 등 제외
+  if (!stage || !h || !a) return null; // EASL·올스타 등 제외
   const played = !g.live && !(g.home.score === '0' && g.away.score === '0');
   return [g.date, g.time, stage, h, a, g.venue, played ? Number(g.home.score) : null, played ? Number(g.away.score) : null];
 }

@@ -128,7 +128,7 @@ export default function DayPanel({ date, nav }) {
         <p className="muted center day-empty">
           이 날은 등록된 경기가 없어요.
           <br />
-          연습경기·D리그 등은 <b>📷 일정</b>으로 일정 사진을 가져오거나
+          연습경기·대회 등은 <b>📷 일정</b>으로 일정 사진을 가져오거나
           <br />
           <b>＋ 기록</b>에서 직접 입력할 수 있어요.
         </p>
