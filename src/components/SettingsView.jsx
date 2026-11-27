@@ -3,7 +3,7 @@ import { useLiveQuery } from 'dexie-react-hooks';
 import { db, setSetting } from '../lib/db.js';
 import { useFavTeams, usePrefs, useSetting } from '../lib/hooks.js';
 import { exportBackup, importBackup, daysSince, BACKUP_REMIND_DAYS } from '../lib/backup.js';
-import { LEAGUES, teamsOf, getTeam } from '../data/teams.js';
+import { SCHEDULE_LEAGUES as LEAGUES, teamsOf, getTeam } from '../data/teams.js'; // 일정 데이터가 있는 리그만 (국가대표 제외)
 import { SCHEDULE_META, fmtUpdated, checkedAt } from '../data/games.js';
 
 const APP_VERSION = '0.4';

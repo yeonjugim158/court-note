@@ -6,7 +6,12 @@
 export const LEAGUES = [
   { id: 'kbl', name: 'KBL', full: 'KBL 프로농구', desc: '프로농구 10개 구단', badge: 'KBL' },
   { id: 'uleague', name: '대학농구', full: '대학농구 U-리그 남자부', desc: 'U-리그 남자부', badge: 'U' },
+  // 국가대표: 공식 일정 데이터 없음(noSchedule) → 경기를 직접 입력 · 응원팀·일정 구독 대상 아님
+  { id: 'national', name: '국가대표', full: '남자 농구 국가대표', desc: 'A매치 · 국제대회', badge: '국대', noSchedule: true },
 ];
+
+/** 공식 일정 데이터가 있는 리그 (응원팀·캘린더 구독·일정 확인 시각) */
+export const SCHEDULE_LEAGUES = LEAGUES.filter((l) => !l.noSchedule);
 
 export const STAGES = {
   preseason: '오픈매치데이',
@@ -18,6 +23,8 @@ export const STAGES = {
   ufinal: '플레이오프 결승',
   cup: '컵대회',
   mbc: 'MBC배 전국대학농구 상주대회',
+  intl: '국제대회',
+  friendly: '평가전',
   allstar: '올스타전',
 };
 
@@ -51,6 +58,25 @@ export const TEAMS = [
   { id: 'myongji', leagueId: 'uleague', name: '명지대', short: '명지대', color: '#002D72', venue: '명지대학교' },
   { id: 'chosun', leagueId: 'uleague', name: '조선대', short: '조선대', color: '#00704A', venue: '조선대학교' },
   { id: 'sangmyung', leagueId: 'uleague', name: '상명대', short: '상명대', color: '#1A3D7C', venue: '상명대학교' },
+  // 국가대표 (남자) · 일정 데이터 없이 직접 입력용 (id는 대학 'korea'와 겹치지 않게 nt-)
+  { id: 'nt-kor', leagueId: 'national', name: '대한민국', short: '대한민국', color: '#C60C30', venue: '' },
+  { id: 'nt-jpn', leagueId: 'national', name: '일본', short: '일본', color: '#1D2088', venue: '' },
+  { id: 'nt-chn', leagueId: 'national', name: '중국', short: '중국', color: '#DE2910', venue: '' },
+  { id: 'nt-tpe', leagueId: 'national', name: '대만', short: '대만', color: '#0B3D91', venue: '' },
+  { id: 'nt-phi', leagueId: 'national', name: '필리핀', short: '필리핀', color: '#0038A8', venue: '' },
+  { id: 'nt-aus', leagueId: 'national', name: '호주', short: '호주', color: '#00843D', venue: '' },
+  { id: 'nt-nzl', leagueId: 'national', name: '뉴질랜드', short: '뉴질랜드', color: '#111111', venue: '' },
+  { id: 'nt-irn', leagueId: 'national', name: '이란', short: '이란', color: '#239F40', venue: '' },
+  { id: 'nt-jor', leagueId: 'national', name: '요르단', short: '요르단', color: '#007A3D', venue: '' },
+  { id: 'nt-lbn', leagueId: 'national', name: '레바논', short: '레바논', color: '#ED1C24', venue: '' },
+  { id: 'nt-qat', leagueId: 'national', name: '카타르', short: '카타르', color: '#8A1538', venue: '' },
+  { id: 'nt-ina', leagueId: 'national', name: '인도네시아', short: '인도네시아', color: '#CE1126', venue: '' },
+  { id: 'nt-gum', leagueId: 'national', name: '괌', short: '괌', color: '#00297B', venue: '' },
+  { id: 'nt-tha', leagueId: 'national', name: '태국', short: '태국', color: '#2D2A4A', venue: '' },
+  { id: 'nt-ksa', leagueId: 'national', name: '사우디아라비아', short: '사우디아라비아', color: '#006C35', venue: '' },
+  { id: 'nt-brn', leagueId: 'national', name: '바레인', short: '바레인', color: '#CE1126', venue: '' },
+  { id: 'nt-kaz', leagueId: 'national', name: '카자흐스탄', short: '카자흐스탄', color: '#00AFCA', venue: '' },
+  { id: 'nt-syr', leagueId: 'national', name: '시리아', short: '시리아', color: '#007A3D', venue: '' },
 ];
 
 const TEAM_MAP = new Map(TEAMS.map((t) => [t.id, t]));

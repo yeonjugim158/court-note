@@ -501,3 +501,6 @@ input[type='date'], input[type='time'] { padding-top: 0 !important; padding-bott
 .gf-row { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 6px; }
 .gf select, .gf input:not([type=checkbox]) { min-width: 0; width: 100%; height: 44px; font-size: 16px; padding: 0 10px; /* 같은 높이 · 16px 미만이면 아이폰이 눌렀을 때 화면을 확대함 */ }
 .gf .stage-custom { width: 100%; }
+
+/* 국가대표 리그 배지 */
+.lb-national { color: #C60C30; }

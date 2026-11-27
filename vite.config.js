@@ -22,7 +22,7 @@ function teamCalendars() {
       }
     }
     const files = new Map();
-    for (const t of TEAMS) files.set(`ics/team-${t.id}.ics`, makeCalendar(`🏀 ${t.short} 경기 · 코트노트`, byTeam.get(t.id)));
+    for (const t of TEAMS.filter((t) => t.leagueId !== 'national')) files.set(`ics/team-${t.id}.ics`, makeCalendar(`🏀 ${t.short} 경기 · 코트노트`, byTeam.get(t.id)));
     return files;
   };
   return {

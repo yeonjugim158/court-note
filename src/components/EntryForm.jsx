@@ -82,10 +82,19 @@ export default function EntryForm({ date: initDate, entryId, gameId, presetGame,
     setStep('form');
   };
 
-  const customGame = () => {
+  const customGame = (leagueId = f.leagueId) => {
+    const national = leagueId === 'national';
+    const kor = getTeam('nt-kor');
     set({
-      game: { id: null, leagueId: f.leagueId, stage: 'regular', time: '', venue: '', home: blankSide(), away: blankSide(), custom: true },
-      cheer: 'none',
+      leagueId,
+      game: {
+        id: null, leagueId, stage: national ? 'intl' : 'regular', time: '', venue: '',
+        // 국가대표는 대한민국을 홈·응원팀으로 미리 채움
+        home: national ? { id: kor.id, name: kor.name, short: kor.short, color: kor.color } : blankSide(),
+        away: blankSide(),
+        custom: true,
+      },
+      cheer: national ? 'home' : 'none',
       score: { home: '', away: '' },
     });
     setStep('form');
@@ -209,7 +218,18 @@ export default function EntryForm({ date: initDate, entryId, gameId, presetGame,
           <p className="step-sub">{MODES[f.mode].icon} {MODES[f.mode].label} · {fmtDate(f.date)}</p>
           <div className="choice-grid">
             {LEAGUES.map((l) => (
-              <button key={l.id} className="choice" onClick={() => { set({ leagueId: l.id }); setStep('game'); }}>
+              <button
+                key={l.id}
+                className="choice"
+                onClick={() => {
+                  // 일정 데이터가 없는 리그(국가대표)는 경기 목록 없이 바로 직접 입력
+                  if (l.noSchedule) customGame(l.id);
+                  else {
+                    set({ leagueId: l.id });
+                    setStep('game');
+                  }
+                }}
+              >
                 <span className={'league-badge big lb-' + l.id}>{l.badge}</span>
                 <b>{l.name}</b>
                 <span className="muted">{l.desc}</span>
@@ -252,8 +272,10 @@ export default function EntryForm({ date: initDate, entryId, gameId, presetGame,
               );
             })}
           </div>
-          <button className="btn ghost block" onClick={customGame}>목록에 없어요 · 직접 입력</button>
-          <p className="muted small center" style={{ marginTop: 10 }}>공식 홈페이지 일정 기준 · {fmtUpdated(checkedAt(f.leagueId))} 확인</p>
+          <button className="btn ghost block" onClick={() => customGame()}>목록에 없어요 · 직접 입력</button>
+          {checkedAt(f.leagueId) && (
+            <p className="muted small center" style={{ marginTop: 10 }}>공식 홈페이지 일정 기준 · {fmtUpdated(checkedAt(f.leagueId))} 확인</p>
+          )}
         </div>
       </>
     );
@@ -264,7 +286,7 @@ export default function EntryForm({ date: initDate, entryId, gameId, presetGame,
   const isLive = f.mode === 'live';
   return (
     <>
-      <LayerHead title={editing ? '기록 수정' : '기록 쓰기'} onBack={() => (editing ? onClose() : setStep(preset && f.game?.id === preset.id ? 'mode' : 'game'))} />
+      <LayerHead title={editing ? '기록 수정' : '기록 쓰기'} onBack={() => (editing ? onClose() : setStep(preset && f.game?.id === preset.id ? 'mode' : getLeague(g.leagueId)?.noSchedule ? 'league' : 'game'))} />
       <div className="layer-body form">
         {/* 경기 정보 */}
         <section className="game-card">

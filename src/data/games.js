@@ -25,6 +25,7 @@ const KBL_CHECKED_AT = import.meta.env.VITE_CHECKED_AT || null;
 /** 리그별 마지막 확인 시각(ISO). 자동 확인 기록이 없으면 마지막 변경 시각 */
 export function checkedAt(leagueId) {
   const m = meta[leagueId];
+  if (!m) return null; // 국가대표처럼 일정 데이터가 없는 리그
   if (leagueId === 'kbl' && KBL_CHECKED_AT && KBL_CHECKED_AT > m.updatedAt) return KBL_CHECKED_AT;
   return m.updatedAt;
 }

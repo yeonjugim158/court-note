@@ -181,12 +181,22 @@ export default function CalendarView({ nav, weekStart = 0, goSettings }) {
       </div>
       <div
         className="cal-grid"
-        onTouchStart={(e) => (touch.current = e.touches[0].clientX)}
+        onTouchStart={(e) => {
+          const t = e.touches[0];
+          touch.current = { x: t.clientX, y: t.clientY, time: Date.now(), scroll: window.scrollY };
+        }}
         onTouchEnd={(e) => {
-          if (touch.current == null) return;
-          const dx = e.changedTouches[0].clientX - touch.current;
+          const s = touch.current;
           touch.current = null;
-          if (Math.abs(dx) > 60) move(dx < 0 ? 1 : -1);
+          if (!s) return;
+          const t = e.changedTouches[0];
+          const dx = t.clientX - s.x, dy = t.clientY - s.y;
+          // 달 넘기기는 "확실히 옆으로 민 짧은 동작"만:
+          // 아래로 스크롤하다 손가락이 옆으로 조금 흔들린 경우(세로 이동·화면 스크롤이 있었던 경우)는 무시
+          const sideways = Math.abs(dx) > 70 && Math.abs(dx) > Math.abs(dy) * 2;
+          const quick = Date.now() - s.time < 700;
+          const scrolled = Math.abs(window.scrollY - s.scroll) > 8;
+          if (sideways && quick && !scrolled) move(dx < 0 ? 1 : -1);
         }}
       >
         {cells}
